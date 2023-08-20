@@ -1,0 +1,21 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=08263a40_002D4114_002D44cb_002Db154_002Dd19cac4b52c6/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenProcessingEmptyString_DoesNothing" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8edf807e_002D91b3_002D49dd_002D99ff_002Dcf420f1681b4/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="WhenProcessingSqlLines_ExtractSqlUpToParametersIncluded" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=9c833893_002D0f32_002D4f6b_002Da665_002D82ea0514d019/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenProcessingMultipleLines_ExtractThoseThatHaveSQL" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f7c44d22_002Dbd2c_002D4e65_002Da0e9_002D817ccd624801/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenProcessingEmptyString_DoesNothing #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests.WhenProcessingEmptyString_DoesNothing&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

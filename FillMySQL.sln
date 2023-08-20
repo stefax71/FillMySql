@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FillMySQLLib", "FillMySQLLib\FillMySQLLib.csproj", "{E4682E2E-4F55-45CF-8F83-567E7E4EEE2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FillMySQL", "FillMySQL\FillMySQL.csproj", "{EF76CB21-EC5B-4690-BF1D-BBDA35585ED9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FillMySQLTests", "FillMySQLTests\FillMySQLTests.csproj", "{5BABBA1B-ACCF-4367-A46C-B14D6FF803CA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E4682E2E-4F55-45CF-8F83-567E7E4EEE2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4682E2E-4F55-45CF-8F83-567E7E4EEE2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4682E2E-4F55-45CF-8F83-567E7E4EEE2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4682E2E-4F55-45CF-8F83-567E7E4EEE2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF76CB21-EC5B-4690-BF1D-BBDA35585ED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF76CB21-EC5B-4690-BF1D-BBDA35585ED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF76CB21-EC5B-4690-BF1D-BBDA35585ED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF76CB21-EC5B-4690-BF1D-BBDA35585ED9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BABBA1B-ACCF-4367-A46C-B14D6FF803CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BABBA1B-ACCF-4367-A46C-B14D6FF803CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BABBA1B-ACCF-4367-A46C-B14D6FF803CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BABBA1B-ACCF-4367-A46C-B14D6FF803CA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
