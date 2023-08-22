@@ -9,7 +9,7 @@ namespace FillMySQLTests
     [TestFixture]
     public class ProcessorTest
     {
-        string testString = @"This is the first line not containing any SQL
+        private const string TestString = @"This is the first line not containing any SQL
                         (stupid text before) Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000 ['9044954',1,110,2,1,1,7] (silly text after)
                         This is the third line, not containing any SQL
                         Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000 ['9044954',1,110,2,1,1,7]
@@ -86,7 +86,7 @@ namespace FillMySQLTests
         [Test, Description("Test description here")]
         public void WhenRequestingSecondStringPositionInComplexQuery_ReturnsActualBeginAndEndCharacterIndexForSql()
         {
-            SqlProcessor sqlProcessor = new SqlProcessor(testString);
+            SqlProcessor sqlProcessor = new SqlProcessor(TestString);
         
             (int StartSql, int EndSql, int StartParam, int EndParam) = sqlProcessor.GetIndexesOfQuery(2);
             Assert.AreEqual(527, StartSql);
@@ -94,18 +94,18 @@ namespace FillMySQLTests
             Assert.AreEqual(820, StartParam);
             Assert.AreEqual(845, EndParam);
 
-            string queryCheck = testString.Substring(StartSql, EndSql - StartSql);
+            string queryCheck = TestString.Substring(StartSql, EndSql - StartSql);
             Assert.AreEqual("Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000", 
                                 queryCheck.Trim());
 
-            string paramsCheck = testString.Substring(StartParam, EndParam - StartParam);
+            string paramsCheck = TestString.Substring(StartParam, EndParam - StartParam);
             Assert.AreEqual("['9044954',1,110,2,1,1,7]", paramsCheck.Trim());
         }
         
         [Test, Description("Test description here")]
         public void WhenRequestingQueryWithNoParamsPositionInComplexString_ReturnsActualBeginAndEndCharacterIndexForSql()
         {
-            SqlProcessor sqlProcessor = new SqlProcessor(testString);
+            SqlProcessor sqlProcessor = new SqlProcessor(TestString);
         
             (int StartSql, int EndSql, int StartParam, int EndParam) = sqlProcessor.GetIndexesOfQuery(3);
             Assert.AreEqual(944, StartSql);
@@ -113,7 +113,7 @@ namespace FillMySQLTests
             Assert.AreEqual(-1, StartParam);
             Assert.AreEqual(-1, EndParam);
 
-            string queryCheck = testString.Substring(StartSql, EndSql - StartSql);
+            string queryCheck = TestString.Substring(StartSql, EndSql - StartSql);
             Assert.AreEqual("SELECT * FROM TABLE", 
                 queryCheck.Trim());
         }
@@ -123,7 +123,7 @@ namespace FillMySQLTests
         {
             string expected =
                 "Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1='9044954' And FILTER 2 IN (1, 110) And  FILTER3 IN(2, 1) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=1)) And  (FINALCONDITION=7) and rownum <= 20000";
-            SqlProcessor sqlProcessor = new SqlProcessor(testString);
+            SqlProcessor sqlProcessor = new SqlProcessor(TestString);
             string processedQuery = sqlProcessor.GetQueryProcessed(2);
             Assert.AreEqual(expected.ToLower(), processedQuery.ToLower());
         }
@@ -132,7 +132,7 @@ namespace FillMySQLTests
         public void WhenRequestingProcessedQueryWithNoParams_ReturnsSimpleQuery()
         {
             string expected = "SELECT * FROM TABLE";
-            SqlProcessor sqlProcessor = new SqlProcessor(testString);
+            SqlProcessor sqlProcessor = new SqlProcessor(TestString);
             string processedQuery = sqlProcessor.GetQueryProcessed(3);
             Assert.AreEqual(expected.ToLower(), processedQuery.ToLower());
             

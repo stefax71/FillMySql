@@ -9,17 +9,16 @@ namespace FillMySQL
     struct QueryData
     {
         public int SqlStartPosition;
-        public int SQLEndPosition;
+        public int SqlEndPosition;
         public int ParamsStartPosition;
         public int ParamsEndPosition;
-        public string query;
-        public string queryParameters;
+        public string Query;
+        public string QueryParameters;
     }
     
     public class SqlProcessor
     {
         private readonly string _sqlString;
-        private List<(string, string)> _queriesInString;
         private List<QueryData> _queriesData;
 
         public SqlProcessor(string sqlString)
@@ -51,7 +50,7 @@ namespace FillMySQL
 
         public (string query, string queryParams) GetQueryAtPosition(int i)
         {
-            return (_queriesData[i - 1].query, _queriesData[i - 1].queryParameters);
+            return (_queriesData[i - 1].Query, _queriesData[i - 1].QueryParameters);
         }
 
         private List<QueryData> ProcessSqlContent()
@@ -65,9 +64,8 @@ namespace FillMySQL
                 try
                 {
                     CheckIfStringContainsSql(currentString);
-                    QueryData queryData = new QueryData();
                     var (firstKeywordPosition, openingParamDelimiterPosition, closingParamDelimiterPosition, sqlPart, paramsPart) = ParseQuery(currentString);
-                    queryData = PopulateQueryData(firstKeywordPosition, currentAbsoluteIndex, openingParamDelimiterPosition, closingParamDelimiterPosition, sqlPart, paramsPart);
+                    var queryData = PopulateQueryData(firstKeywordPosition, currentAbsoluteIndex, openingParamDelimiterPosition, closingParamDelimiterPosition, sqlPart, paramsPart);
                     _queriesData.Add(queryData);
                 }
                 catch (ArgumentException ex)
@@ -85,12 +83,12 @@ namespace FillMySQL
         private static (int firstKeyworkPosition, int openingParamDelimiterPosition, int closingParamDelimiterPosition, string
             sqlPart, string paramsPart) ParseQuery(string currentString)
         {
-            int firstKeyworkPosition = currentString.IndexOf("select", StringComparison.OrdinalIgnoreCase);
-            int openingParamDelimiterPosition = currentString.IndexOf("[", StringComparison.OrdinalIgnoreCase) > 0
+            var firstKeyworkPosition = currentString.IndexOf("select", StringComparison.OrdinalIgnoreCase);
+            var openingParamDelimiterPosition = currentString.IndexOf("[", StringComparison.OrdinalIgnoreCase) >= 0
                 ? currentString.IndexOf("[", StringComparison.OrdinalIgnoreCase)
                 : currentString.Length;
-            int closingParamDelimiterPosition = currentString.IndexOf("]", StringComparison.OrdinalIgnoreCase);
-            string sqlPart = currentString.Substring(firstKeyworkPosition,
+            var closingParamDelimiterPosition = currentString.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+            var sqlPart = currentString.Substring(firstKeyworkPosition,
                 openingParamDelimiterPosition - firstKeyworkPosition).Trim();
             string paramsPart = null;
             if (openingParamDelimiterPosition > 0 && closingParamDelimiterPosition > 0)
@@ -107,29 +105,29 @@ namespace FillMySQL
         {
             QueryData queryData;
             queryData.SqlStartPosition = firstKeyworkPosition + currentAbsoluteIndex;
-            queryData.SQLEndPosition = openingParamDelimiterPosition + currentAbsoluteIndex;
+            queryData.SqlEndPosition = openingParamDelimiterPosition + currentAbsoluteIndex;
             queryData.ParamsStartPosition =
                 closingParamDelimiterPosition > 0 ? openingParamDelimiterPosition + currentAbsoluteIndex : -1;
             queryData.ParamsEndPosition = closingParamDelimiterPosition > 0
                 ? closingParamDelimiterPosition + currentAbsoluteIndex + 1
                 : -1;
-            queryData.query = sqlPart;
-            queryData.queryParameters = paramsPart;
+            queryData.Query = sqlPart;
+            queryData.QueryParameters = paramsPart;
             return queryData;
         }
 
         public (int StartSql, int EndSql, int StartParam, int EndParam) GetIndexesOfQuery(int i)
         {
-            return (_queriesData[i - 1].SqlStartPosition, _queriesData[i - 1].SQLEndPosition,
+            return (_queriesData[i - 1].SqlStartPosition, _queriesData[i - 1].SqlEndPosition,
                 _queriesData[i - 1].ParamsStartPosition, _queriesData[i - 1].ParamsEndPosition);
         }
 
         public string GetQueryProcessed(int queryIndex)
         {
             QueryData qd = _queriesData[queryIndex - 1];
-            if (qd.queryParameters == null)
+            if (qd.QueryParameters == null)
             {
-                return qd.query;
+                return qd.Query;
             }
 
             var (listOfParams, sqlString) = ListOfParams(qd);
@@ -141,15 +139,15 @@ namespace FillMySQL
 
         private (string[] listOfParams, string sqlString) ListOfParams(QueryData qd)
         {
-            var paramsString = qd.queryParameters.Replace('[', ' ').Replace(']', ' ').Trim();
+            var paramsString = qd.QueryParameters.Replace('[', ' ').Replace(']', ' ').Trim();
             var listOfParams = paramsString.Split(',');
-            var countPlaceholders = qd.query.Count(s => s == '?');
+            var countPlaceholders = qd.Query.Count(s => s == '?');
             if (countPlaceholders != listOfParams.Length)
             {
                 throw new ArgumentException("Number of parameters do not match the number of placeholders");
             }
 
-            var sqlString = qd.query;
+            var sqlString = qd.Query;
             return (listOfParams, sqlString);
         }
     }
