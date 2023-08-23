@@ -1,36 +1,52 @@
 ﻿using System.Windows;
+using System.Windows.Documents;
 using Microsoft.Win32;
 using Syncfusion.SfSkinManager;
 using Syncfusion.Themes.Windows11Dark.WPF;
 
 namespace FillMySQL
 {
+    
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow
     {
+        private SqlProcessor _sqlProcessor ;
         
         public MainWindow()
         {
-            // Create a Windows11LightThemeSettings object and set the color palette
-            Windows11DarkThemeSettings windows11LightThemeSettings = new Windows11DarkThemeSettings();
-            windows11LightThemeSettings.Palette = Windows11Palette.SteelBlue;
-            //
-            // // Register the theme settings and apply the theme to the main window
-            SfSkinManager.RegisterThemeSettings("Windows11Dark", windows11LightThemeSettings);
-            SfSkinManager.SetTheme(this, new Theme("Windows11Dark"));
-            SfSkinManager.ApplyStylesOnApplication = true;
+            _sqlProcessor = new SqlProcessor();
             InitializeComponent();
         }
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void LoadFile_OnClick(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
+            if (openFileDialog.ShowDialog() != true) return;
+            _sqlProcessor.LoadFile(openFileDialog.FileName);
+            var document = new FlowDocument();
+                
+            foreach (var currentString in _sqlProcessor.OriginalStringAsArray())
             {
-                MessageBox.Show("Hello!","Hi there",  System.Windows.MessageBoxButton.OK);    
+                var par = new Paragraph(new Run(currentString))
+                {
+                    Margin = new Thickness(0)
+                };
+                document.Blocks.Add(par);
             }
+            OriginalQuery.Document = document;
+        }
+
+        private void TextBox_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            OriginalQuery.Width = MainGrid.Width - 20;
+        }
+
+        private void GoToNextQuery_OnClick(object sender, RoutedEventArgs e)
+        {
+            
+            throw new System.NotImplementedException();
         }
     }
 }

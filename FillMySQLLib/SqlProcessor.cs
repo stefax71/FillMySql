@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace FillMySQL
@@ -18,16 +21,32 @@ namespace FillMySQL
     
     public class SqlProcessor
     {
-        private readonly string _sqlString;
+        private string _sqlString;
         private List<QueryData> _queriesData;
+        private ObservableCollection<string> _queries;
 
-        public SqlProcessor(string sqlString)
+        public ObservableCollection<string> Queries
+        {
+            get
+            {
+                _queries = GetAllQueries();
+                return _queries;
+            }
+        }
+
+        public string SqlString
+        {
+            get => _sqlString;
+        }
+
+        public void Load(string sqlString)
         {
             CheckIfStringIsEmpty(sqlString);
             CheckIfStringContainsSql(sqlString);
 
             _sqlString = sqlString;
             _queriesData = ProcessSqlContent();
+            
         }
 
         private static void CheckIfStringContainsSql(string sqlString)
@@ -55,7 +74,7 @@ namespace FillMySQL
 
         private List<QueryData> ProcessSqlContent()
         {
-            var resultingStrings = _sqlString.Split(new[] { Environment.NewLine }, System.StringSplitOptions.None);
+            var resultingStrings = OriginalStringAsArray();
             _queriesData = new List<QueryData>();
 
             var currentAbsoluteIndex = 0;
@@ -78,6 +97,11 @@ namespace FillMySQL
                 }
             }
             return _queriesData;
+        }
+
+        public string[] OriginalStringAsArray()
+        {
+            return _sqlString.Split(new[] { Environment.NewLine }, System.StringSplitOptions.None);
         }
 
         private static (int firstKeyworkPosition, int openingParamDelimiterPosition, int closingParamDelimiterPosition, string
@@ -124,6 +148,10 @@ namespace FillMySQL
 
         public string GetQueryProcessed(int queryIndex)
         {
+            if (queryIndex <= 0 || queryIndex > _queriesData.Count)
+            {
+                throw new ArgumentException("Indexing starts from 1 and cannot go beyond the number of queries");
+            }
             QueryData qd = _queriesData[queryIndex - 1];
             if (qd.QueryParameters == null)
             {
@@ -149,6 +177,24 @@ namespace FillMySQL
 
             var sqlString = qd.Query;
             return (listOfParams, sqlString);
+        }
+
+        public void LoadFile(string fillmysqllibSamplelog)
+        {
+            var fileContent = File.ReadAllText(@fillmysqllibSamplelog, Encoding.UTF8);
+            _sqlString = fileContent;
+            Load(fileContent);
+        }
+
+        private ObservableCollection<string> GetAllQueries()
+        {
+            var list = new ObservableCollection<string>();
+            foreach (var currentQueryData in _queriesData)
+            {
+                list.Add(currentQueryData.Query);
+            }
+
+            return list;
         }
     }
 }

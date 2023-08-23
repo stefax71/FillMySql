@@ -4,20 +4,37 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FillMySQL"
-        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-        xmlns:syncfusionskin= "clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
-        syncfusionskin:SfSkinManager.Theme="{syncfusionskin:SkinManagerExtension ThemeName=Windows11Light}"
         mc:Ignorable="d"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        <TextBox HorizontalAlignment="Center" Margin="0,34,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="505" Height="290"/>
-        
+
+    <Grid Name="MainGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <RichTextBox  
+            Name="OriginalQuery" 
+            VerticalAlignment="Top" 
+            Margin="10,56,10,0"
+            Width="505" 
+            Height="136" 
+            Background="#99FFFFFF"
+            Foreground="Black"
+            SizeChanged="TextBox_SizeChanged"
+            />
+
         <Button 
             Content="Load File" 
+            Name="LoadFile"
             HorizontalAlignment="Left" 
-            Margin="10,10,0,0" 
             VerticalAlignment="Top"
-            Click="ButtonBase_OnClick"
+            Click="LoadFile_OnClick" Margin="10,10,0,0"
+            />
+        <Button 
+            Content="Next   " 
+            Name="GoToNextQuery"
+            HorizontalAlignment="Right" 
+            Margin="0,10,10,0" 
+            VerticalAlignment="Top"
+            Click="GoToNextQuery_OnClick"
             />
 
     </Grid>
