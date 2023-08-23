@@ -35,7 +35,7 @@
     &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e732c5b6_002Dcbcc_002D4bad_002Dba8a_002D8091e77b31e2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="WhenRequestingQueryWithNoParamsPositionInComplexString_ReturnsActualBeginAndEndCharacterIndexForSql #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e732c5b6_002Dcbcc_002D4bad_002Dba8a_002D8091e77b31e2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenRequestingQueryWithNoParamsPositionInComplexString_ReturnsActualBeginAndEndCharacterIndexForSql #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.ProcessorTest&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
@@ -46,7 +46,7 @@
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f7c44d22_002Dbd2c_002D4e65_002Da0e9_002D817ccd624801/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenProcessingEmptyString_DoesNothing #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f7c44d22_002Dbd2c_002D4e65_002Da0e9_002D817ccd624801/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="WhenProcessingEmptyString_DoesNothing #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.ProcessorTest&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;

@@ -36,6 +36,9 @@
             VerticalAlignment="Top"
             Click="GoToNextQuery_OnClick"
             />
+        <ResizeGrip Width="300"></ResizeGrip>
+        <ListView Name="ProcessedQueries" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20, 0, 10, 20" Width="250" Background="#99FFFFFF">
 
+        </ListView>
     </Grid>
 </Window>

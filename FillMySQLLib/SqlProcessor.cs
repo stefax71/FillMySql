@@ -23,16 +23,7 @@ namespace FillMySQL
     {
         private string _sqlString;
         private List<QueryData> _queriesData;
-        private ObservableCollection<string> _queries;
-
-        public ObservableCollection<string> Queries
-        {
-            get
-            {
-                _queries = GetAllQueries();
-                return _queries;
-            }
-        }
+        public ObservableCollection<string> Queries => GetAllQueries();
 
         public string SqlString
         {
@@ -46,7 +37,6 @@ namespace FillMySQL
 
             _sqlString = sqlString;
             _queriesData = ProcessSqlContent();
-            
         }
 
         private static void CheckIfStringContainsSql(string sqlString)
