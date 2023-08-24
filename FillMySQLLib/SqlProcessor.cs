@@ -146,7 +146,7 @@ namespace FillMySQL
             return ProcessQueryFromQueryData(qd);
         }
 
-        private string ProcessQueryFromQueryData(QueryData qd)
+        public string ProcessQueryFromQueryData(QueryData qd)
         {
             if (qd.QueryParameters == null)
             {
