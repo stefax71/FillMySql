@@ -7,28 +7,64 @@
         mc:Ignorable="d"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        Title="MainWindow" Height="350" Width="525">
+        MinHeight="350"
+        MinWidth="525"
+        Title="FillMySQL!" Height="350" Width="525">
 
-    <Grid Name="MainGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+    <Grid Name="MainGrid" 
+          HorizontalAlignment="Stretch" 
+          VerticalAlignment="Stretch"
+          ShowGridLines="False">
+        <Grid.ColumnDefinitions>			
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />            
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MaxHeight="50" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
         <RichTextBox  
+            Grid.ColumnSpan="4"
+            Grid.Row="1"
+            Grid.RowSpan="3"
             Name="OriginalQuery" 
-            VerticalAlignment="Top" 
-            Margin="10,56,10,0"
-            Width="505" 
-            Height="136" 
+            VerticalAlignment="Stretch" 
+            Margin="10,10,10,10"
             Background="#99FFFFFF"
             Foreground="Black"
-            SizeChanged="TextBox_SizeChanged"
             />
 
         <Button 
+            Grid.Row="0"
+            Grid.Column="0"
             Content="Load File" 
             Name="LoadFile"
             HorizontalAlignment="Left" 
             VerticalAlignment="Top"
             Click="LoadFile_OnClick" Margin="10,10,0,0"
             />
-        <Button 
+        <Button
+            Grid.Row="0"
+            Grid.Column="1"
+            Visibility="Hidden"
+            Content="Unlock" 
+            Name="UnlockBox"
+            HorizontalAlignment="Left" 
+            VerticalAlignment="Top"
+            Click="UnlockBox_OnClick"
+            Margin="10,10,0,0"
+        />        
+        
+        <Button
+            Grid.Column="3"
             Content="Next   " 
             Name="GoToNextQuery"
             HorizontalAlignment="Right" 
@@ -36,9 +72,30 @@
             VerticalAlignment="Top"
             Click="GoToNextQuery_OnClick"
             />
-        <ResizeGrip Width="300"></ResizeGrip>
-        <ListView Name="ProcessedQueries" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20, 0, 10, 20" Width="250" Background="#99FFFFFF">
-
+        
+        <TextBox  
+            Grid.ColumnSpan="4"
+            Grid.Row="4"
+            Grid.RowSpan="3"
+            TextWrapping="WrapWithOverflow"
+            Name="ProcessedQuery" 
+            VerticalAlignment="Stretch" 
+            Margin="10,10,10,10"
+            Background="#99FFFFFF"
+            Foreground="Black"
+        />        
+        
+        <ListView 
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Grid.Row="4"
+            Grid.RowSpan="3"
+            Visibility="Hidden"
+            Name="ProcessedQueries" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            Margin="10, 10, 10, 10" 
+            Background="#99FFFFFF">
         </ListView>
     </Grid>
 </Window>

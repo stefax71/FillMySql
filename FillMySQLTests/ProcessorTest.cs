@@ -164,5 +164,28 @@ namespace FillMySQLTests
             sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
             Assert.True(sqlProcessor.Queries.Count == 3);            
         }
+
+        [Test]
+        public void WhenCallingReset_EmptiesEverything()
+        {
+            SqlProcessor sqlProcessor = new SqlProcessor();
+            sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
+            Assert.True(sqlProcessor.Queries.Count == 3);
+            Assert.True(sqlProcessor.SqlString.Length > 0);
+            sqlProcessor.Reset();
+            Assert.True(sqlProcessor.Queries.Count == 0);
+            Assert.True(sqlProcessor.SqlString.Length == 0);
+        }
+
+        [Test]
+        public void WhenRequestingQueryAtCharacter621_ReturnsSecondQuery()
+        {
+            var expected = "Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000";
+            SqlProcessor sqlProcessor = new SqlProcessor();
+            sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
+            QueryData? data = sqlProcessor.GetQueryAtCharacterPosition(621);
+            Assert.NotNull(data);
+            Assert.AreEqual(expected, data.Value.Query);
+        }
    }
 }

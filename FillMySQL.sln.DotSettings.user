@@ -1,53 +1,18 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">C:\Users\stefa\AppData\Local\JetBrains\Rider2023.2\resharper-host\temp\Rider\vAny\CoverageData\_FillMySQL.1094221690\Snapshot\snapshot.utdcvr</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=08263a40_002D4114_002D44cb_002Db154_002Dd19cac4b52c6/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenProcessingEmptyString_DoesNothing" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=2c87b6e2_002Debfa_002D4849_002D9e25_002D82a5fbb02a14/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenRequestingQueryWithNoParamsPositionInComplexString_ReturnsActualBeginAndEndCharacterIndexForSql #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7dc34499_002D9155_002D424e_002D8020_002D0d7a872672dd/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="WhenRequestingQueryAtCharacter621_ReturnsSecondQuery" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.ProcessorTest&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=4fa40f25_002D2ed6_002D47a4_002D9415_002De450db0cc7f8/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenInitializingWithMultilineStringWithTwoQueries_GettingFirstQueryReturnsFirstQueryInText #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests.WhenInitializingWithMultilineStringWithTwoQueries_GettingFirstQueryReturnsFirstQueryInText&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=5d9be4ca_002Db249_002D4891_002Db1bb_002D874ebe89e76a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenInitializingWithMultilineStringWithTwoQueries_GettingFirstQueryReturnsFirstQueryInText #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests.WhenInitializingWithMultilineStringWithTwoQueries_GettingFirstQueryReturnsFirstQueryInText&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8e1abfad_002D55e9_002D4a41_002Dab52_002D081e2f2d43d1/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenRequestingQueryWithNoParamsPositionInComplexString_ReturnsActualBeginAndEndCharacterIndexForSql" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests.WhenRequestingQueryWithNoParamsPositionInComplexString_ReturnsActualBeginAndEndCharacterIndexForSql&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8edf807e_002D91b3_002D49dd_002D99ff_002Dcf420f1681b4/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenProcessingSqlLines_ExtractSqlUpToParametersIncluded" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=9c833893_002D0f32_002D4f6b_002Da665_002D82ea0514d019/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenProcessingMultipleLines_ExtractThoseThatHaveSQL" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e732c5b6_002Dcbcc_002D4bad_002Dba8a_002D8091e77b31e2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenRequestingQueryWithNoParamsPositionInComplexString_ReturnsActualBeginAndEndCharacterIndexForSql #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.ProcessorTest&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=efd51b0f_002Df0dc_002D4651_002D9bb2_002D69f500e76eea/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="WhenInitializingWithMultilineStringWithTwoQueries_GettingFirstQueryReturnsFirstQueryInText #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.Tests.WhenInitializingWithMultilineStringWithTwoQueries_GettingFirstQueryReturnsFirstQueryInText&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f7c44d22_002Dbd2c_002D4e65_002Da0e9_002D817ccd624801/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="WhenProcessingEmptyString_DoesNothing #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::5BABBA1B-ACCF-4367-A46C-B14D6FF803CA::.NETFramework,Version=v4.8::FillMySQLTests.ProcessorTest&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	</wpf:ResourceDictionary>

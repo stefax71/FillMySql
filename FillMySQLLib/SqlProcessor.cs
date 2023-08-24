@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 namespace FillMySQL
 {
 
-    struct QueryData
+    public struct QueryData
     {
         public int SqlStartPosition;
         public int SqlEndPosition;
@@ -143,6 +143,11 @@ namespace FillMySQL
                 throw new ArgumentException("Indexing starts from 1 and cannot go beyond the number of queries");
             }
             QueryData qd = _queriesData[queryIndex - 1];
+            return ProcessQueryFromQueryData(qd);
+        }
+
+        private string ProcessQueryFromQueryData(QueryData qd)
+        {
             if (qd.QueryParameters == null)
             {
                 return qd.Query;
@@ -183,8 +188,25 @@ namespace FillMySQL
             {
                 list.Add(currentQueryData.Query);
             }
-
             return list;
+        }
+
+        public void Reset()
+        {
+            _sqlString = "";
+            _queriesData.Clear();
+        }
+
+        public QueryData? GetQueryAtCharacterPosition(int i)
+        {
+            foreach (var queryData in _queriesData)
+            {
+                if (queryData.SqlStartPosition <= i && queryData.SqlEndPosition >= i)
+                {
+                    return queryData;
+                }
+            }
+            return null;
         }
     }
 }
