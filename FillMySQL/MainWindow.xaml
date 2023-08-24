@@ -29,6 +29,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" MaxHeight="20"/>
         </Grid.RowDefinitions>
         
         <RichTextBox  
@@ -97,5 +98,16 @@
             Margin="10, 10, 10, 10" 
             Background="#99FFFFFF">
         </ListView>
+        
+        <StatusBar
+            Name="StatusBar"
+            Grid.Row="7"
+            Grid.ColumnSpan="4"
+            Background="Gray">
+            <StatusBarItem>
+                <TextBlock Name="StatusBarMessage" />
+            </StatusBarItem>            
+            
+        </StatusBar>
     </Grid>
 </Window>

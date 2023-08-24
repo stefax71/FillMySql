@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Win32;
 
 namespace FillMySQL
@@ -13,6 +14,8 @@ namespace FillMySQL
     public partial class MainWindow
     {
         private readonly SqlProcessor _sqlProcessor;
+        private TextRange _currentQueryRange = null;
+        private Brush _originalBackgroundBrush = null;
         private ObservableCollection<string> Queries => _sqlProcessor.Queries;
 
         public MainWindow()
@@ -34,6 +37,7 @@ namespace FillMySQL
                 if (queryData != null)
                 {
                     QueryData content = queryData.Value;
+                    changeQueryBackgroundInOriginalQueryTextBox(content);
                     var processedString = _sqlProcessor.ProcessQueryFromQueryData(content);
                     ProcessedQuery.Text = processedString;
                 }
@@ -49,6 +53,24 @@ namespace FillMySQL
 
         }
 
+        private void changeQueryBackgroundInOriginalQueryTextBox(QueryData content)
+        {
+            if (_currentQueryRange != null)
+            {
+                _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, _originalBackgroundBrush);
+            }
+
+            TextPointer queryStartPosition =
+                OriginalQuery.Document.ContentStart.GetPositionAtOffset(content.SqlStartPosition,
+                    LogicalDirection.Forward);
+            TextPointer queryEndPosition =
+                OriginalQuery.Document.ContentStart.GetPositionAtOffset(content.SqlEndPosition + 1,
+                    LogicalDirection.Forward);
+            _currentQueryRange = new TextRange(queryStartPosition, queryEndPosition);
+            _originalBackgroundBrush = _currentQueryRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
+            _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Yellow);
+        }
+
         private int CalculateCurrentPositionInText()
         {
             TextRange range = new TextRange(OriginalQuery.Document.ContentStart, OriginalQuery.CaretPosition);
@@ -57,17 +79,46 @@ namespace FillMySQL
 
         private void LoadFile_OnClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() != true) return;
-            _sqlProcessor.LoadFile(openFileDialog.FileName);
-            OriginalQuery.Document = CreateDocumentFromSqlString(_sqlProcessor.OriginalStringAsArray());
-
-            var itemsBinding = new Binding
+            try
             {
-                Source = Queries
-            };
-            
-            ProcessedQueries.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                if (openFileDialog.ShowDialog() != true) return;
+                _sqlProcessor.LoadFile(openFileDialog.FileName);
+                RestoreStatusBar();
+                OriginalQuery.Document = CreateDocumentFromSqlString(_sqlProcessor.OriginalStringAsArray());
+            }
+            catch (ArgumentException ex)
+            {
+                DisplayError(ex);
+            }
+
+        }
+
+        private void ProcessPasteOperation()
+        {
+            try
+            {
+                if (IsQueryBoxEmpty() || (!IsQueryBoxEmpty() && ConfirmOverwriteCurrentText()))
+                {
+                    var text = Clipboard.GetText();
+                    _sqlProcessor.Load(text);
+                    RestoreStatusBar();
+                    OriginalQuery.Document = CreateDocumentFromSqlString(new[] { text });
+                    var queryData = _sqlProcessor.GetQueryProcessed(1);
+                    ProcessedQuery.Text = queryData;
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                DisplayError(ex);
+            }
+
+        }
+
+        private void RestoreStatusBar()
+        {
+            StatusBar.Background = Brushes.Gray;
+            StatusBarMessage.Text = "";
         }
 
         private FlowDocument CreateDocumentFromSqlString(IEnumerable<string> inputLines)
@@ -93,15 +144,12 @@ namespace FillMySQL
             ProcessPasteOperation();
         }
 
-        private void ProcessPasteOperation()
+        private void DisplayError(ArgumentException ex)
         {
-            if (IsQueryBoxEmpty() || (!IsQueryBoxEmpty() && ConfirmOverwriteCurrentText()))
+            if (ex.Message == "String does not contain any query")
             {
-                var text = Clipboard.GetText();
-                OriginalQuery.Document = CreateDocumentFromSqlString(new[] { text });
-                _sqlProcessor.Load(text);
-                var queryData = _sqlProcessor.GetQueryProcessed(1);
-                ProcessedQuery.Text = queryData;
+                StatusBar.Background = Brushes.Red;
+                StatusBarMessage.Text = ex.Message;
             }
         }
 
