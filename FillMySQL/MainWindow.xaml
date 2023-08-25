@@ -19,7 +19,11 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />            
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="150" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" MaxHeight="50" />
@@ -32,20 +36,11 @@
             <RowDefinition Height="*" MaxHeight="20"/>
         </Grid.RowDefinitions>
         
-        <RichTextBox  
-            Grid.ColumnSpan="4"
-            Grid.Row="1"
-            Grid.RowSpan="3"
-            Name="OriginalQuery" 
-            VerticalAlignment="Stretch" 
-            Margin="10,10,10,10"
-            Background="#99d3d3d3"
-            Foreground="Black"
-            />
 
         <Button 
             Grid.Row="0"
             Grid.Column="0"
+            Grid.ColumnSpan="2"
             Content="Load File" 
             Name="LoadFile"
             HorizontalAlignment="Left" 
@@ -65,17 +60,42 @@
         />        
         
         <Button
-            Grid.Column="3"
-            Content="Next   " 
+            Grid.Row="0"
+            Grid.Column="7"
+            Content=" &gt;&gt;  " 
             Name="GoToNextQuery"
             HorizontalAlignment="Right" 
             Margin="0,10,10,0" 
             VerticalAlignment="Top"
             Click="GoToNextQuery_OnClick"
             />
+        <Button
+            Grid.Row="0"
+            Grid.Column="7"
+            Content=" &lt;&lt;  " 
+            Name="GoPreviousQuery"
+            HorizontalAlignment="Left" 
+            Margin="0,10,10,0" 
+            VerticalAlignment="Top"
+            Click="GoToNextQuery_OnClick"
+            IsEnabled="{Binding CanBrowseToNextQuery}"
+        />        
+        
+        <RichTextBox  
+            Grid.Column="0"
+            Grid.ColumnSpan="8"
+            Grid.Row="1"
+            Grid.RowSpan="3"
+            Name="OriginalQuery" 
+            VerticalAlignment="Stretch" 
+            Margin="10,10,10,10"
+            Background="#99d3d3d3"
+            Foreground="Black"
+        />
         
         <TextBox  
-            Grid.ColumnSpan="4"
+            Grid.Column="0"
+            Grid.ColumnSpan="8"
             Grid.Row="4"
             Grid.RowSpan="3"
             TextWrapping="WrapWithOverflow"
@@ -86,23 +106,11 @@
             Foreground="Black"
         />        
         
-        <ListView 
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Grid.Row="4"
-            Grid.RowSpan="3"
-            Visibility="Hidden"
-            Name="ProcessedQueries" 
-            HorizontalAlignment="Stretch" 
-            VerticalAlignment="Stretch" 
-            Margin="10, 10, 10, 10" 
-            Background="#99FFFFFF">
-        </ListView>
-        
         <StatusBar
             Name="StatusBar"
+            Grid.Column="0"
             Grid.Row="7"
-            Grid.ColumnSpan="4"
+            Grid.ColumnSpan="8"
             Background="Gray">
             <StatusBarItem>
                 <TextBlock Name="StatusBarMessage" />

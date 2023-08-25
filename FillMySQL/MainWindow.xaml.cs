@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -11,22 +10,19 @@ namespace FillMySQL
 {
     public partial class MainWindow
     {
-        private readonly SqlProcessor _sqlProcessor;
-        private TextRange _currentQueryRange = null;
-        private TextRange _currentParamRange = null;
-        private Brush _originalBackgroundBrush = null;
-        private int _currentQueryIndex = -1;
-
-        private ObservableCollection<string> Queries => _sqlProcessor.Queries;
-
+        private TextRange _currentQueryRange;
+        private TextRange _currentParamRange;
+        private Brush _originalBackgroundBrush;
+        private readonly MainWindowModel _mainWindowModel;
+        
         public MainWindow()
         {
-            _sqlProcessor = new SqlProcessor();
             InitializeComponent();
             OriginalQuery.PreviewKeyDown += OriginalQuery_PreviewKeyDown;
             OriginalQuery.IsReadOnly = true;
             OriginalQuery.IsReadOnlyCaretVisible = true;
             OriginalQuery.SelectionChanged += OriginalQueryOnSelectionChanged;
+            _mainWindowModel = new MainWindowModel();
         }
 
         private void OriginalQueryOnSelectionChanged(object sender, RoutedEventArgs e)
@@ -34,17 +30,16 @@ namespace FillMySQL
             try
             {
                 var currentPosition = CalculateCurrentPositionInText();
-                (_currentQueryIndex, QueryData? queryData) = _sqlProcessor.GetQueryAtCharacterPosition(currentPosition);
+                (_mainWindowModel.CurrentQueryIndex, QueryData? queryData) = _mainWindowModel.SqlProcessor.GetQueryAtCharacterPosition(currentPosition);
                 if (queryData != null)
                 {
                     QueryData content = queryData.Value;
                     ChangeQueryBackgroundInOriginalQueryTextBox(content);
-                    var processedString = _sqlProcessor.ProcessQueryFromQueryData(content);
+                    var processedString = _mainWindowModel.SqlProcessor.ProcessQueryFromQueryData(content);
                     ProcessedQuery.Text = processedString;
                 }
                 else
                 {
-                    Console.WriteLine("Non c'è nulla alla posizione " + currentPosition);
                     ProcessedQuery.Text = "";
                 }
             }
@@ -52,7 +47,6 @@ namespace FillMySQL
             {
                 // Ignore the exception as it can be thrown when clicking on the empty textbox
             }
-
         }
 
         private void ChangeQueryBackgroundInOriginalQueryTextBox(QueryData content)
@@ -79,16 +73,6 @@ namespace FillMySQL
             _currentParamRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Chartreuse);
         }
 
-        private void ColorizeRange(int from, int to, Brush color)
-        {
-            TextPointer sqlStartPointer = FindTextPointerByPosition(OriginalQuery.Document, from + 1);
-            TextPointer sqlEndPointer = FindTextPointerByPosition(OriginalQuery.Document, to);
-            
-            _currentQueryRange = new TextRange(sqlStartPointer, sqlEndPointer);
-            _originalBackgroundBrush = _currentQueryRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
-            _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, color);    
-        }
-        
         private TextPointer FindTextPointerByPosition(FlowDocument document, int targetPosition)
         {
             int currentPosition = 0;
@@ -120,8 +104,8 @@ namespace FillMySQL
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 if (openFileDialog.ShowDialog() != true) return;
-                _sqlProcessor.LoadFile(openFileDialog.FileName);
-                LoadStringAsQuery(_sqlProcessor.OriginalStringAsArray());
+                _mainWindowModel.SqlProcessor.LoadFile(openFileDialog.FileName);
+                LoadStringAsQuery(_mainWindowModel.SqlProcessor.OriginalStringAsArray());
             }
             catch (ArgumentException ex)
             {
@@ -137,7 +121,7 @@ namespace FillMySQL
                 if (IsQueryBoxEmpty() || (!IsQueryBoxEmpty() && ConfirmOverwriteCurrentText()))
                 {
                     var text = Clipboard.GetText();
-                    _sqlProcessor.Load(text);
+                    _mainWindowModel.SqlProcessor.Load(text);
                     LoadStringAsQuery(new[] {text});
                 }
             }
@@ -152,7 +136,7 @@ namespace FillMySQL
         {
             RestoreStatusBar();
             OriginalQuery.Document = CreateDocumentFromSqlString(inputStrings);
-            var queryData = _sqlProcessor.GetQueryProcessed(1);
+            var queryData = _mainWindowModel.SqlProcessor.GetQueryProcessed(1);
             ProcessedQuery.Text = queryData;
         }
 

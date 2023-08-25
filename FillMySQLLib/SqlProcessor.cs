@@ -37,6 +37,11 @@ namespace FillMySQL
             set => _eol = value;
         }
 
+        public int NumberOfQueries
+        {
+            get => _queriesData.Count;
+        }
+
         public void Load(string sqlString)
         {
             CheckIfStringIsEmpty(sqlString);
