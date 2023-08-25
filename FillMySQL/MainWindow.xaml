@@ -11,6 +11,10 @@
         MinWidth="525"
         Title="FillMySQL!" Height="350" Width="525">
 
+    <Window.DataContext>
+        <local:MainWindowModel />
+    </Window.DataContext>
+    
     <Grid Name="MainGrid" 
           HorizontalAlignment="Stretch" 
           VerticalAlignment="Stretch"
@@ -113,8 +117,8 @@
             Grid.ColumnSpan="8"
             Background="Gray">
             <StatusBarItem>
-                <TextBlock Name="StatusBarMessage" />
+                <TextBlock Name="StatusBarMessage" Text="{Binding CurrentQueryIndex}"/>
             </StatusBarItem>            
         </StatusBar>
     </Grid>
-</Window>
+</Window>    

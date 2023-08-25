@@ -23,6 +23,7 @@ namespace FillMySQL
             OriginalQuery.IsReadOnlyCaretVisible = true;
             OriginalQuery.SelectionChanged += OriginalQueryOnSelectionChanged;
             _mainWindowModel = new MainWindowModel();
+            DataContext = _mainWindowModel;
         }
 
         private void OriginalQueryOnSelectionChanged(object sender, RoutedEventArgs e)
