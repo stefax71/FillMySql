@@ -92,27 +92,19 @@ namespace FillMySQL
         private TextPointer FindTextPointerByPosition(FlowDocument document, int targetPosition)
         {
             int currentPosition = 0;
-            Console.WriteLine("Cerco la posizione " + targetPosition);
-            
             foreach (Block block in document.Blocks)
             {
                 if (block is Paragraph paragraph)
                 {
                     int paragraphLength = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text.Length;
-                    Console.WriteLine("Siamo in un paragrafo di lunghezza " + paragraphLength);
                     if (currentPosition + paragraphLength >= targetPosition)
                     {
-                        Console.Write("currentPosition è " + currentPosition + " che sottraggo a " + targetPosition + " = ");
                         int charIndex = targetPosition - currentPosition;
-                        Console.WriteLine(charIndex);
-                        Console.WriteLine("---------------------------");
                         return paragraph.ContentStart.GetPositionAtOffset(charIndex);
                     }
                     currentPosition += (paragraphLength  + 2);
-                    Console.WriteLine("La posizione attuale è " + currentPosition);
                 }
             }
-
             return null;
         }
 
