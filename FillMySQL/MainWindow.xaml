@@ -39,7 +39,7 @@
             Name="OriginalQuery" 
             VerticalAlignment="Stretch" 
             Margin="10,10,10,10"
-            Background="#99FFFFFF"
+            Background="#99d3d3d3"
             Foreground="Black"
             />
 
@@ -82,7 +82,7 @@
             Name="ProcessedQuery" 
             VerticalAlignment="Stretch" 
             Margin="10,10,10,10"
-            Background="#99FFFFFF"
+            Background="#99d3d3d3"
             Foreground="Black"
         />        
         
@@ -107,7 +107,6 @@
             <StatusBarItem>
                 <TextBlock Name="StatusBarMessage" />
             </StatusBarItem>            
-            
         </StatusBar>
     </Grid>
 </Window>

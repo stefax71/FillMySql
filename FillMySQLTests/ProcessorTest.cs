@@ -76,7 +76,7 @@ namespace FillMySQLTests
         
             (int StartSql, int EndSql, int StartParam, int EndParam) = sqlProcessor.GetIndexesOfQuery(1);
             Assert.AreEqual(25, StartSql);
-            Assert.AreEqual(82, EndSql);
+            Assert.AreEqual(81, EndSql);
             Assert.AreEqual(82, StartParam);
             Assert.AreEqual(92, EndParam);
 
@@ -95,7 +95,7 @@ namespace FillMySQLTests
         
             (int StartSql, int EndSql, int StartParam, int EndParam) = sqlProcessor.GetIndexesOfQuery(2);
             Assert.AreEqual(527, StartSql);
-            Assert.AreEqual(820, EndSql);
+            Assert.AreEqual(819, EndSql);
             Assert.AreEqual(820, StartParam);
             Assert.AreEqual(845, EndParam);
 
@@ -115,7 +115,7 @@ namespace FillMySQLTests
         
             (int StartSql, int EndSql, int StartParam, int EndParam) = sqlProcessor.GetIndexesOfQuery(3);
             Assert.AreEqual(944, StartSql);
-            Assert.AreEqual(964, EndSql);
+            Assert.AreEqual(963, EndSql);
             Assert.AreEqual(-1, StartParam);
             Assert.AreEqual(-1, EndParam);
 
@@ -183,8 +183,23 @@ namespace FillMySQLTests
             var expected = "Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000";
             SqlProcessor sqlProcessor = new SqlProcessor();
             sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
-            QueryData? data = sqlProcessor.GetQueryAtCharacterPosition(621);
+            (int position, QueryData? data) = sqlProcessor.GetQueryAtCharacterPosition(621);
+            Assert.AreEqual(2, position);
             Assert.NotNull(data);
+            Assert.AreEqual(expected, data.Value.Query);
+        }
+
+        [Test]
+        public void WhenRequestingQueryAtCaracter621InLinuxEOL_ReturnsSecondQuery()
+        {
+            var source =
+                "This is the first line not containing any SQL\n(stupid text before) Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000 ['9044954',1,110,2,1,1,7] (silly text after)\nThis is the third line, not containing any SQL\nSelect  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000 ['9044954',1,110,2,1,1,7]\nThis is the fourth line, not containing any SQL\nSELECT * FROM TABLE \nThis is the fifth line";
+            var expected = "Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000";            
+            SqlProcessor sqlProcessor = new SqlProcessor();
+            sqlProcessor.Load(source);
+            (int position, QueryData? data) = sqlProcessor.GetQueryAtCharacterPosition(621);
+            Assert.NotNull(data);
+            Assert.AreEqual(2, position);
             Assert.AreEqual(expected, data.Value.Query);
         }
    }

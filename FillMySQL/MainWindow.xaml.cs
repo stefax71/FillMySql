@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -15,7 +13,10 @@ namespace FillMySQL
     {
         private readonly SqlProcessor _sqlProcessor;
         private TextRange _currentQueryRange = null;
+        private TextRange _currentParamRange = null;
         private Brush _originalBackgroundBrush = null;
+        private int _currentQueryIndex = -1;
+
         private ObservableCollection<string> Queries => _sqlProcessor.Queries;
 
         public MainWindow()
@@ -33,16 +34,17 @@ namespace FillMySQL
             try
             {
                 var currentPosition = CalculateCurrentPositionInText();
-                QueryData? queryData = _sqlProcessor.GetQueryAtCharacterPosition(currentPosition);
+                (_currentQueryIndex, QueryData? queryData) = _sqlProcessor.GetQueryAtCharacterPosition(currentPosition);
                 if (queryData != null)
                 {
                     QueryData content = queryData.Value;
-                    changeQueryBackgroundInOriginalQueryTextBox(content);
+                    ChangeQueryBackgroundInOriginalQueryTextBox(content);
                     var processedString = _sqlProcessor.ProcessQueryFromQueryData(content);
                     ProcessedQuery.Text = processedString;
                 }
                 else
                 {
+                    Console.WriteLine("Non c'è nulla alla posizione " + currentPosition);
                     ProcessedQuery.Text = "";
                 }
             }
@@ -53,22 +55,65 @@ namespace FillMySQL
 
         }
 
-        private void changeQueryBackgroundInOriginalQueryTextBox(QueryData content)
+        private void ChangeQueryBackgroundInOriginalQueryTextBox(QueryData content)
         {
             if (_currentQueryRange != null)
             {
                 _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, _originalBackgroundBrush);
+                _currentParamRange.ApplyPropertyValue(TextElement.BackgroundProperty, _originalBackgroundBrush);
             }
 
-            TextPointer queryStartPosition =
-                OriginalQuery.Document.ContentStart.GetPositionAtOffset(content.SqlStartPosition,
-                    LogicalDirection.Forward);
-            TextPointer queryEndPosition =
-                OriginalQuery.Document.ContentStart.GetPositionAtOffset(content.SqlEndPosition + 1,
-                    LogicalDirection.Forward);
-            _currentQueryRange = new TextRange(queryStartPosition, queryEndPosition);
+            // Must calculate all of them in advance, cannot extract single method because color would add spaces!
+            // We could process each character in the text to check if it's a control character but would slow down
+            TextPointer sqlStartPointer = FindTextPointerByPosition(OriginalQuery.Document, content.SqlStartPosition + 1);
+            TextPointer sqlEndPointer = FindTextPointerByPosition(OriginalQuery.Document, content.SqlEndPosition + 1);
+            TextPointer paramStartPointer = FindTextPointerByPosition(OriginalQuery.Document, content.ParamsStartPosition + 1);
+            TextPointer paramEndPointer = FindTextPointerByPosition(OriginalQuery.Document, content.ParamsEndPosition + 1);
+
+            _currentQueryRange = new TextRange(sqlStartPointer, sqlEndPointer);
             _originalBackgroundBrush = _currentQueryRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
             _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Yellow);
+
+            _currentParamRange = new TextRange(paramStartPointer, paramEndPointer);
+            _originalBackgroundBrush = _currentParamRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
+            _currentParamRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Chartreuse);
+        }
+
+        private void ColorizeRange(int from, int to, Brush color)
+        {
+            TextPointer sqlStartPointer = FindTextPointerByPosition(OriginalQuery.Document, from + 1);
+            TextPointer sqlEndPointer = FindTextPointerByPosition(OriginalQuery.Document, to);
+            
+            _currentQueryRange = new TextRange(sqlStartPointer, sqlEndPointer);
+            _originalBackgroundBrush = _currentQueryRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
+            _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, color);    
+        }
+        
+        private TextPointer FindTextPointerByPosition(FlowDocument document, int targetPosition)
+        {
+            int currentPosition = 0;
+            Console.WriteLine("Cerco la posizione " + targetPosition);
+            
+            foreach (Block block in document.Blocks)
+            {
+                if (block is Paragraph paragraph)
+                {
+                    int paragraphLength = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text.Length;
+                    Console.WriteLine("Siamo in un paragrafo di lunghezza " + paragraphLength);
+                    if (currentPosition + paragraphLength >= targetPosition)
+                    {
+                        Console.Write("currentPosition è " + currentPosition + " che sottraggo a " + targetPosition + " = ");
+                        int charIndex = targetPosition - currentPosition;
+                        Console.WriteLine(charIndex);
+                        Console.WriteLine("---------------------------");
+                        return paragraph.ContentStart.GetPositionAtOffset(charIndex);
+                    }
+                    currentPosition += (paragraphLength  + 2);
+                    Console.WriteLine("La posizione attuale è " + currentPosition);
+                }
+            }
+
+            return null;
         }
 
         private int CalculateCurrentPositionInText()
@@ -84,8 +129,7 @@ namespace FillMySQL
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 if (openFileDialog.ShowDialog() != true) return;
                 _sqlProcessor.LoadFile(openFileDialog.FileName);
-                RestoreStatusBar();
-                OriginalQuery.Document = CreateDocumentFromSqlString(_sqlProcessor.OriginalStringAsArray());
+                LoadStringAsQuery(_sqlProcessor.OriginalStringAsArray());
             }
             catch (ArgumentException ex)
             {
@@ -102,10 +146,7 @@ namespace FillMySQL
                 {
                     var text = Clipboard.GetText();
                     _sqlProcessor.Load(text);
-                    RestoreStatusBar();
-                    OriginalQuery.Document = CreateDocumentFromSqlString(new[] { text });
-                    var queryData = _sqlProcessor.GetQueryProcessed(1);
-                    ProcessedQuery.Text = queryData;
+                    LoadStringAsQuery(new[] {text});
                 }
             }
             catch (ArgumentException ex)
@@ -113,6 +154,14 @@ namespace FillMySQL
                 DisplayError(ex);
             }
 
+        }
+
+        private void LoadStringAsQuery(string[] inputStrings)
+        {
+            RestoreStatusBar();
+            OriginalQuery.Document = CreateDocumentFromSqlString(inputStrings);
+            var queryData = _sqlProcessor.GetQueryProcessed(1);
+            ProcessedQuery.Text = queryData;
         }
 
         private void RestoreStatusBar()
@@ -175,6 +224,6 @@ namespace FillMySQL
         {
             OriginalQuery.IsReadOnly = !OriginalQuery.IsReadOnly;
         }
-        
+
     }
 }

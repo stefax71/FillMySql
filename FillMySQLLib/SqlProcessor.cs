@@ -23,11 +23,18 @@ namespace FillMySQL
     {
         private string _sqlString;
         private List<QueryData> _queriesData;
+        private string _eol;
         public ObservableCollection<string> Queries => GetAllQueries();
 
         public string SqlString
         {
             get => _sqlString;
+        }
+
+        public string Eol
+        {
+            get => _eol;
+            set => _eol = value;
         }
 
         public void Load(string sqlString)
@@ -91,19 +98,52 @@ namespace FillMySQL
 
         public string[] OriginalStringAsArray()
         {
-            return _sqlString.Split(new[] { Environment.NewLine }, System.StringSplitOptions.None);
+            if (HasWindowsEOL())
+            {
+                Eol = "\r\n";
+                return _sqlString.Split(new[] { "\r\n" }, System.StringSplitOptions.None);    
+            }
+
+            if (HasMacEOL())
+            {
+                Eol = "\r";
+                return _sqlString.Split(new[] { "\r" }, System.StringSplitOptions.None);
+            }
+
+            if (HasLinuxEOL())
+            {
+                Eol = "\n";
+                return _sqlString.Split(new[] { "\n" }, System.StringSplitOptions.None);
+            }
+
+            return new[] { _sqlString };
         }
+
+        private bool HasWindowsEOL()
+        {
+            return _sqlString.IndexOf("\r\n", StringComparison.Ordinal) > 0;
+        }
+
+        private bool HasMacEOL()
+        {
+            return _sqlString.IndexOf("\r", StringComparison.Ordinal) > 0 && _sqlString.IndexOf("\n", StringComparison.Ordinal) < 0;
+        }
+        
+        private bool HasLinuxEOL()
+        {
+            return _sqlString.IndexOf("\n", StringComparison.Ordinal) > 0 && _sqlString.IndexOf("\r", StringComparison.Ordinal) < 0;
+        }        
 
         private static (int firstKeyworkPosition, int openingParamDelimiterPosition, int closingParamDelimiterPosition, string
             sqlPart, string paramsPart) ParseQuery(string currentString)
         {
-            var firstKeyworkPosition = currentString.IndexOf("select", StringComparison.OrdinalIgnoreCase);
+            var firstKeywordPosition = currentString.IndexOf("select", StringComparison.OrdinalIgnoreCase);
             var openingParamDelimiterPosition = currentString.IndexOf("[", StringComparison.OrdinalIgnoreCase) >= 0
                 ? currentString.IndexOf("[", StringComparison.OrdinalIgnoreCase)
                 : currentString.Length;
             var closingParamDelimiterPosition = currentString.IndexOf("]", StringComparison.OrdinalIgnoreCase);
-            var sqlPart = currentString.Substring(firstKeyworkPosition,
-                openingParamDelimiterPosition - firstKeyworkPosition).Trim();
+            var sqlPart = currentString.Substring(firstKeywordPosition,
+                openingParamDelimiterPosition - firstKeywordPosition).Trim();
             string paramsPart = null;
             if (openingParamDelimiterPosition > 0 && closingParamDelimiterPosition > 0)
             {
@@ -111,7 +151,7 @@ namespace FillMySQL
                     closingParamDelimiterPosition - openingParamDelimiterPosition + 1).Trim();
             }
 
-            return (firstKeyworkPosition, openingParamDelimiterPosition, closingParamDelimiterPosition, sqlPart, paramsPart);
+            return (firstKeywordPosition, openingParamDelimiterPosition, closingParamDelimiterPosition, sqlPart, paramsPart);
         }
 
         private QueryData PopulateQueryData(int firstKeyworkPosition, int currentAbsoluteIndex,
@@ -119,7 +159,7 @@ namespace FillMySQL
         {
             QueryData queryData;
             queryData.SqlStartPosition = firstKeyworkPosition + currentAbsoluteIndex;
-            queryData.SqlEndPosition = openingParamDelimiterPosition + currentAbsoluteIndex;
+            queryData.SqlEndPosition = openingParamDelimiterPosition + currentAbsoluteIndex - 1;
             queryData.ParamsStartPosition =
                 closingParamDelimiterPosition > 0 ? openingParamDelimiterPosition + currentAbsoluteIndex : -1;
             queryData.ParamsEndPosition = closingParamDelimiterPosition > 0
@@ -197,16 +237,18 @@ namespace FillMySQL
             _queriesData.Clear();
         }
 
-        public QueryData? GetQueryAtCharacterPosition(int i)
+        public (int, QueryData?) GetQueryAtCharacterPosition(int i)
         {
+            var counter = 1;
             foreach (var queryData in _queriesData)
             {
                 if (queryData.SqlStartPosition <= i && queryData.SqlEndPosition >= i)
                 {
-                    return queryData;
+                    return (counter, queryData);
                 }
+                counter++;
             }
-            return null;
+            return (-1, null);
         }
     }
 }
