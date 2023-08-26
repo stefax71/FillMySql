@@ -42,7 +42,6 @@ namespace FillMySQL
                 case nameof(_mainWindowModel.CanBrowseToPreviousRecord):
                     BrowsePreviousQuery.IsEnabled = _mainWindowModel.CanBrowseToPreviousRecord;
                     break;
-                
             }
         }
 
