@@ -10,12 +10,22 @@ namespace FillMySQL
         public readonly SqlProcessor SqlProcessor;
         public TextRange CurrentQueryRange = null;
         public int _currentQueryIndex = -1;
-
-
+        public bool CanBrowseToNextRecord { get; set; }
+        public bool CanBrowseToPreviousRecord { get; set; }
+        
         public int CurrentQueryIndex
         {
             get => _currentQueryIndex;
-            set => _currentQueryIndex = value;
+            set
+            {
+                if (value < 0) _currentQueryIndex = 0;
+                else if (value > SqlProcessor.NumberOfQueries) _currentQueryIndex = SqlProcessor.NumberOfQueries;
+                else _currentQueryIndex = value;
+                CanBrowseToNextRecord = (SqlProcessor.NumberOfQueries > 0 && _currentQueryIndex < SqlProcessor.NumberOfQueries);
+                CanBrowseToPreviousRecord = (SqlProcessor.NumberOfQueries > 0 && _currentQueryIndex > 1);
+                OnPropertyChanged(nameof(CanBrowseToNextRecord));
+                OnPropertyChanged(nameof(CanBrowseToPreviousRecord));
+            }
         }
 
         public MainWindowModel()

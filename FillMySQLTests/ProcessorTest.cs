@@ -37,9 +37,9 @@ namespace FillMySQLTests
         {
             var mySqlProcessor = new SqlProcessor();
             mySqlProcessor.Load("SELECT * FROM TABLE WHERE FIELD=? AND OTHERFIELD=? [1, 'abc']");
-            (string query, string queryParams) = mySqlProcessor.GetQueryAtPosition(1);
-            Assert.AreEqual("SELECT * FROM TABLE WHERE FIELD=? AND OTHERFIELD=?", query);
-            Assert.AreEqual("[1, 'abc']", queryParams);
+            QueryData queryData = mySqlProcessor.GetQueryAtPosition(1);
+            Assert.AreEqual("SELECT * FROM TABLE WHERE FIELD=? AND OTHERFIELD=?", queryData.Query);
+            Assert.AreEqual("[1, 'abc']", queryData.QueryParameters);
         }
         
         [Test]
@@ -47,9 +47,9 @@ namespace FillMySQLTests
         {
             var sqlProcessor = new SqlProcessor();
             sqlProcessor.Load("(OtherText Before Query) SELECT * FROM SECONDTABLE WHERE FIELD=? AND OTHERFIELD=? [1, 'abc'](text after)");
-            (string query, string queryParams) = sqlProcessor.GetQueryAtPosition(1);
-            Assert.AreEqual("SELECT * FROM SECONDTABLE WHERE FIELD=? AND OTHERFIELD=?", query);
-            Assert.AreEqual("[1, 'abc']", queryParams);
+            QueryData queryData = sqlProcessor.GetQueryAtPosition(1);
+            Assert.AreEqual("SELECT * FROM SECONDTABLE WHERE FIELD=? AND OTHERFIELD=?", queryData.Query);
+            Assert.AreEqual("[1, 'abc']", queryData.QueryParameters);
         }
 
         [Test]
@@ -59,9 +59,10 @@ namespace FillMySQLTests
             sqlProcessor.Load(@"(OtherText Before Query) SELECT * FROM SECONDTABLE WHERE FIELD=? AND OTHERFIELD=? [1, 'abc'](text after)
                                             SELECT * FROM FIRSTTABLE WHERE FIELDONE=? [8]");
 
-            (string query, string queryParams) = sqlProcessor.GetQueryAtPosition(2);
-            Assert.AreEqual("SELECT * FROM FIRSTTABLE WHERE FIELDONE=?", query);
-            Assert.AreEqual("[8]", queryParams);
+            QueryData queryData = sqlProcessor.GetQueryAtPosition(2);
+            
+            Assert.AreEqual("SELECT * FROM FIRSTTABLE WHERE FIELDONE=?", queryData.Query);
+            Assert.AreEqual("[8]", queryData.QueryParameters);
         }
 
         [Test]

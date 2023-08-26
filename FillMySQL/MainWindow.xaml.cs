@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -24,6 +25,25 @@ namespace FillMySQL
             OriginalQuery.SelectionChanged += OriginalQueryOnSelectionChanged;
             _mainWindowModel = new MainWindowModel();
             DataContext = _mainWindowModel;
+            _mainWindowModel.PropertyChanged += PropertyHasChanged;
+            
+            PropertyHasChanged(_mainWindowModel, new PropertyChangedEventArgs(nameof(_mainWindowModel.CanBrowseToNextRecord)));
+            PropertyHasChanged(_mainWindowModel, new PropertyChangedEventArgs(nameof(_mainWindowModel.CanBrowseToPreviousRecord)));
+        }
+
+        private void PropertyHasChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(_mainWindowModel.CanBrowseToNextRecord):
+                    BrowseNextQuery.IsEnabled = _mainWindowModel.CanBrowseToNextRecord;
+                    break;
+                
+                case nameof(_mainWindowModel.CanBrowseToPreviousRecord):
+                    BrowsePreviousQuery.IsEnabled = _mainWindowModel.CanBrowseToPreviousRecord;
+                    break;
+                
+            }
         }
 
         private void OriginalQueryOnSelectionChanged(object sender, RoutedEventArgs e)
@@ -34,10 +54,7 @@ namespace FillMySQL
                 (_mainWindowModel.CurrentQueryIndex, QueryData? queryData) = _mainWindowModel.SqlProcessor.GetQueryAtCharacterPosition(currentPosition);
                 if (queryData != null)
                 {
-                    QueryData content = queryData.Value;
-                    ChangeQueryBackgroundInOriginalQueryTextBox(content);
-                    var processedString = _mainWindowModel.SqlProcessor.ProcessQueryFromQueryData(content);
-                    ProcessedQuery.Text = processedString;
+                    ProcessQueryData(queryData);
                 }
                 else
                 {
@@ -48,6 +65,17 @@ namespace FillMySQL
             {
                 // Ignore the exception as it can be thrown when clicking on the empty textbox
             }
+        }
+
+        private void ProcessQueryData(QueryData? queryData)
+        {
+            if (queryData == null) return;
+            
+            QueryData content = queryData.Value;
+            ChangeQueryBackgroundInOriginalQueryTextBox(content);
+            var processedString = _mainWindowModel.SqlProcessor.ProcessQueryFromQueryData(content);
+            _mainWindowModel.CurrentQueryIndex = content.index;
+            ProcessedQuery.Text = processedString;
         }
 
         private void ChangeQueryBackgroundInOriginalQueryTextBox(QueryData content)
@@ -64,7 +92,10 @@ namespace FillMySQL
             TextPointer sqlEndPointer = FindTextPointerByPosition(OriginalQuery.Document, content.SqlEndPosition + 1);
             TextPointer paramStartPointer = FindTextPointerByPosition(OriginalQuery.Document, content.ParamsStartPosition + 1);
             TextPointer paramEndPointer = FindTextPointerByPosition(OriginalQuery.Document, content.ParamsEndPosition + 1);
-
+            
+            OriginalQuery.Focus();
+            ScrollToPosition(sqlStartPointer);
+            
             _currentQueryRange = new TextRange(sqlStartPointer, sqlEndPointer);
             _originalBackgroundBrush = _currentQueryRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
             _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Yellow);
@@ -73,6 +104,19 @@ namespace FillMySQL
             _originalBackgroundBrush = _currentParamRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
             _currentParamRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Chartreuse);
         }
+        
+        private void ScrollToPosition(in TextPointer desiredPosition)
+        {
+            var cursorRect = desiredPosition.GetCharacterRect(LogicalDirection.Forward);
+            var cursorTop = cursorRect.Top;
+
+            var viewportHeight = OriginalQuery.ViewportHeight;
+            var offset = cursorTop - viewportHeight / 2;
+            if (offset > 0)
+            {
+                OriginalQuery.ScrollToVerticalOffset(offset);
+            }
+        }        
 
         private TextPointer FindTextPointerByPosition(FlowDocument document, int targetPosition)
         {
@@ -137,15 +181,10 @@ namespace FillMySQL
         {
             RestoreStatusBar();
             OriginalQuery.Document = CreateDocumentFromSqlString(inputStrings);
-            var queryData = _mainWindowModel.SqlProcessor.GetQueryProcessed(1);
-            ProcessedQuery.Text = queryData;
+            var queryData = _mainWindowModel.SqlProcessor.GetQueryAtPosition(1);
+            ProcessQueryData(queryData);
         }
 
-        private void RestoreStatusBar()
-        {
-            StatusBar.Background = Brushes.Gray;
-            StatusBarMessage.Text = "";
-        }
 
         private FlowDocument CreateDocumentFromSqlString(IEnumerable<string> inputLines)
         {
@@ -174,10 +213,11 @@ namespace FillMySQL
         {
             if (ex.Message == "String does not contain any query")
             {
-                StatusBar.Background = Brushes.Red;
-                StatusBarMessage.Text = ex.Message;
+                ShowErrorInStatusBar(ex.Message);
             }
         }
+
+
 
         private bool IsQueryBoxEmpty()
         {
@@ -187,7 +227,30 @@ namespace FillMySQL
 
         private void GoToNextQuery_OnClick(object sender, RoutedEventArgs e)
         {
-            // do nothing
+            int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex + 1;
+            NavigateToQueryWithIndex(requestedQueryIndex);
+        }
+
+        private void BrowsePreviousQuery_OnClick(object sender, RoutedEventArgs e)
+        {
+            int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex - 1;
+            NavigateToQueryWithIndex(requestedQueryIndex);
+        }
+
+        private void NavigateToQueryWithIndex(int requestedQueryIndex)
+        {
+            try
+            {
+                QueryData? queryData =
+                    _mainWindowModel.SqlProcessor.GetQueryAtPosition(requestedQueryIndex);
+                OriginalQuery.CaretPosition =
+                    FindTextPointerByPosition(OriginalQuery.Document, queryData.Value.SqlStartPosition);
+                ProcessQueryData(queryData);
+            }
+            catch (Exception ex)
+            {
+                ShowErrorInStatusBar(ex.Message);
+            }
         }
 
         private bool ConfirmOverwriteCurrentText()
@@ -202,5 +265,16 @@ namespace FillMySQL
             OriginalQuery.IsReadOnly = !OriginalQuery.IsReadOnly;
         }
 
+        private void ShowErrorInStatusBar(string message)
+        {
+            StatusBar.Background = Brushes.Red;
+            StatusBarMessage.Text = message;
+        }
+
+        private void RestoreStatusBar()
+        {
+            StatusBar.Background = Brushes.Gray;
+            StatusBarMessage.Text = "";
+        }
     }
 }

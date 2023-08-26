@@ -67,7 +67,7 @@
             Grid.Row="0"
             Grid.Column="7"
             Content=" &gt;&gt;  " 
-            Name="GoToNextQuery"
+            Name="BrowseNextQuery"
             HorizontalAlignment="Right" 
             Margin="0,10,10,0" 
             VerticalAlignment="Top"
@@ -77,11 +77,11 @@
             Grid.Row="0"
             Grid.Column="7"
             Content=" &lt;&lt;  " 
-            Name="GoPreviousQuery"
+            Name="BrowsePreviousQuery"
             HorizontalAlignment="Left" 
             Margin="0,10,10,0" 
             VerticalAlignment="Top"
-            Click="GoToNextQuery_OnClick"
+            Click="BrowsePreviousQuery_OnClick"
             IsEnabled="{Binding CanBrowseToNextQuery}"
         />        
         
