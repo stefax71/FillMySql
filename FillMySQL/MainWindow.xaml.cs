@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.AddIn;
-using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
-using ICSharpCode.AvalonEdit.Rendering;
 using ICSharpCode.SharpDevelop.Editor;
 using Microsoft.Win32;
 
@@ -26,20 +21,26 @@ namespace FillMySQL
     {
 
         private readonly MainWindowModel _mainWindowModel;
-        private readonly DocumentColorizingTransformer colorizer;
-        private TextMarkerService textMarkerService;
-        private (ITextMarker _sqlMarker, ITextMarker _paramMarker) _currentMarker;
+        private TextMarkerService _textMarkerService;
+        private (ITextMarker _sqlMarker, ITextMarker _paramMarker, ITextMarker _genericTextBefore, ITextMarker _genericTextAfter) _currentMarker;
 
         public MainWindow()
         {
             InitializeComponent();
-            OriginalQuery.PreviewKeyDown += OriginalQuery_PreviewKeyDown;
+            
             OriginalQuery.IsReadOnly = false;
             _mainWindowModel = new MainWindowModel();
             DataContext = _mainWindowModel;
             _mainWindowModel.PropertyChanged += PropertyHasChanged;
+            
             OriginalQuery.WordWrap = true;
             OriginalQuery.ShowLineNumbers = true;
+            OriginalQuery.IsReadOnly = true;
+            OriginalQuery.TextArea.Caret.PositionChanged += CaretPositionChanged;
+            
+            OriginalQuery.PreviewKeyDown += OriginalQuery_PreviewKeyDown;
+            OriginalQuery.PreviewMouseWheel += QueryBoxOnPreviewMouseWheel;
+            ProcessedQuery.PreviewMouseWheel += QueryBoxOnPreviewMouseWheel;
             
             PropertyHasChanged(_mainWindowModel, new PropertyChangedEventArgs(nameof(_mainWindowModel.CanBrowseToNextRecord)));
             PropertyHasChanged(_mainWindowModel, new PropertyChangedEventArgs(nameof(_mainWindowModel.CanBrowseToPreviousRecord)));
@@ -50,44 +51,52 @@ namespace FillMySQL
                 {
                     IHighlightingDefinition customHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                     OriginalQuery.SyntaxHighlighting = customHighlighting;
-                    colorizer = new SqlColorizingTransformer(_mainWindowModel.SqlProcessor, customHighlighting);
+                    ProcessedQuery.SyntaxHighlighting = customHighlighting;
+                    var colorizer = new SqlColorizingTransformer(_mainWindowModel.SqlProcessor, customHighlighting);
+                    OriginalQuery.TextArea.TextView.LineTransformers.RemoveAt(0);
+                    OriginalQuery.TextArea.TextView.LineTransformers.Add(colorizer);
+                    InitializeTextMarkerService();
+                    
                 }
             }
-            OriginalQuery.TextArea.TextView.LineTransformers.RemoveAt(0);
-            OriginalQuery.TextArea.TextView.LineTransformers.Add(colorizer);
-            InitializeTextMarkerService();
         }
-        
+
+        private void QueryBoxOnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            var textEditor = (TextEditor)sender;
+            if (!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl)) return;
+            textEditor.FontSize = e.Delta switch
+            {
+                > 0 => Math.Min(textEditor.FontSize + 1, 20),
+                < 0 => Math.Max(textEditor.FontSize - 1, 10),
+                _ => textEditor.FontSize
+            };
+            e.Handled = true;
+        }
+
         void InitializeTextMarkerService()
         {
-            var textMarkerService = new TextMarkerService(OriginalQuery.Document);
-            OriginalQuery.TextArea.TextView.BackgroundRenderers.Add(textMarkerService);
-            OriginalQuery.TextArea.TextView.LineTransformers.Add(textMarkerService);
+            _textMarkerService = new TextMarkerService(OriginalQuery.Document);
+            OriginalQuery.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
+            OriginalQuery.TextArea.TextView.LineTransformers.Add(_textMarkerService);
             IServiceContainer services = (IServiceContainer)OriginalQuery.Document.ServiceProvider.GetService(typeof(IServiceContainer));
             if (services != null)
-                services.AddService(typeof(ITextMarkerService), textMarkerService);
-            this.textMarkerService = textMarkerService;
+                services.AddService(typeof(ITextMarkerService), _textMarkerService);
         }        
 
         private void CaretPositionChanged(object sender, EventArgs e)
         {
-            Caret caret = (Caret)sender;
-            int caretLine = caret.Line;
-            int startOffset = 10; // Esempio
-            int endOffset = 50;   // Esempio
-
-            
-            Console.WriteLine("Processing for " + caretLine);
-            if (caretLine >= startOffset && caretLine <= endOffset)
+            try
             {
-                if (!OriginalQuery.TextArea.TextView.LineTransformers.Contains(colorizer))
-                {
-                    OriginalQuery.TextArea.TextView.LineTransformers.Add(colorizer);
-                }
+                ProcessedQuery.Text = "";
+                Caret caret = (Caret)sender;
+                var (_, qd) = _mainWindowModel.SqlProcessor.GetQueryAtCharacterPosition(caret.Offset);
+                RemoveOldMarkers();
+                ProcessQueryData(qd);
             }
-            else
+            catch (Exception ex)
             {
-                OriginalQuery.TextArea.TextView.LineTransformers.Remove(colorizer);
+                // Nothing
             }
         }
 
@@ -132,34 +141,57 @@ namespace FillMySQL
             var processedString = _mainWindowModel.SqlProcessor.ProcessQueryFromQueryData(content);
             _mainWindowModel.CurrentQueryIndex = content.index;
             ProcessedQuery.Text = processedString;
+            
         }
 
         private void ChangeQueryBackgroundInOriginalQueryTextBox(QueryData content)
         {
             RemoveOldMarkers();
-            _currentMarker._sqlMarker = textMarkerService.Create(content.SqlStartPosition,
+            AddMarkerForQuery(content);
+            AddMarkerForParams(content);
+            AddMarkerForRestOfText(content);
+            ScrollViewToOffset(content.SqlStartPosition);
+        }
+
+        private void AddMarkerForRestOfText(QueryData content)
+        {
+            _currentMarker._genericTextBefore = _textMarkerService.Create(0,
+                content.SqlStartPosition);
+            _currentMarker._genericTextBefore.ForegroundColor = Colors.Gray;
+
+            _currentMarker._genericTextAfter = _textMarkerService.Create(Math.Max(content.SqlEndPosition, content.ParamsEndPosition),
+                OriginalQuery.Document.TextLength - Math.Max(content.SqlEndPosition, content.ParamsEndPosition));
+            _currentMarker._genericTextAfter.ForegroundColor = Colors.Gray;
+        }
+
+        private void AddMarkerForQuery(QueryData content)
+        {
+            _currentMarker._sqlMarker = _textMarkerService.Create(content.SqlStartPosition,
                 content.SqlEndPosition - content.SqlStartPosition);
-            _currentMarker._sqlMarker.MarkerTypes = TextMarkerTypes.DottedUnderline;
-            _currentMarker._sqlMarker.MarkerColor = Colors.Blue;
             _currentMarker._sqlMarker.BackgroundColor = Colors.Yellow;
+        }
+
+        private void AddMarkerForParams(QueryData content)
+        {
+            if (content.ParamsStartPosition <= 0 || content.ParamsEndPosition <= 0) return;
             
-            _currentMarker._paramMarker = textMarkerService.Create(content.ParamsStartPosition,
+            _currentMarker._paramMarker = _textMarkerService.Create(content.ParamsStartPosition,
                 content.ParamsEndPosition - content.ParamsStartPosition);
             _currentMarker._paramMarker.BackgroundColor = Colors.Chartreuse;
-            // OriginalQuery.TextArea.Caret.BringCaretToView();
+        }
+
+        private void ScrollViewToOffset(in int offset)
+        {
+            OriginalQuery.TextArea.Caret.Offset = offset;
+            OriginalQuery.TextArea.Caret.BringCaretToView();
         }
 
         private void RemoveOldMarkers()
         {
-            if (_currentMarker._sqlMarker != null)
-            {
-                textMarkerService.Remove(_currentMarker._sqlMarker);
-            }
-
-            if (_currentMarker._paramMarker != null)
-            {
-                textMarkerService.Remove(_currentMarker._paramMarker);
-            }
+            if (_currentMarker._sqlMarker != null) _textMarkerService.Remove(_currentMarker._sqlMarker);
+            if (_currentMarker._paramMarker != null) _textMarkerService.Remove(_currentMarker._paramMarker);
+            if (_currentMarker._genericTextBefore != null) _textMarkerService.Remove(_currentMarker._genericTextBefore);
+            if (_currentMarker._genericTextAfter != null) _textMarkerService.Remove(_currentMarker._genericTextAfter);
         }
 
         private void ProcessPasteOperation()
@@ -204,8 +236,6 @@ namespace FillMySQL
             }
         }
 
-        
-
         private void GoToNextQuery_OnClick(object sender, RoutedEventArgs e)
         {
             int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex + 1;
@@ -224,14 +254,16 @@ namespace FillMySQL
             try
             {
                 Console.WriteLine("Navigating to query " + requestedQueryIndex);
-                QueryData? queryData =
+                QueryData queryData =
                     _mainWindowModel.SqlProcessor.GetQueryAtPosition(requestedQueryIndex);
                 // OriginalQuery.TextArea.Caret.Offset
                 //     FindTextPointerByPosition(OriginalQuery.Document, queryData.Value.SqlStartPosition);
+
                 ProcessQueryData(queryData);
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Cannot navigate to query " + requestedQueryIndex + " " + _mainWindowModel.SqlProcessor.NumberOfQueries);
                 ShowErrorInStatusBar(ex.Message);
             }
         }
