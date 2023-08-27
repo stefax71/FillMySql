@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" ?>
+<SyntaxDefinition name="SQL" extensions=".sql" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+    <Color name="Comment" foreground="#FF808080" fontStyle="italic"/>
+    <Color name="Punctuation" foreground="#FF000000" fontWeight="bold"/>
+    <Color name="Keywords" foreground="#FF0000FF" fontWeight="bold"/>
+    <Color name="String" foreground="#FF990000"/>
+    <Color name="PlainText" foreground="#FFD2D2D2"/>
+    <RuleSet ignoreCase="true">
+        <Rule color="Punctuation">
+            [{}\(\)\[\]|+\-=\.]+
+        </Rule>
+        <Keywords color="Keywords">
+            <Word>ADD</Word>
+            <Word>ADD CONSTRAINT</Word>
+            <Word>ALL</Word>
+            <Word>ALTER</Word>
+            <Word>ALTER COLUMN</Word>
+            <Word>ALTER TABLE</Word>
+            <Word>AND</Word>
+            <Word>ANY</Word>
+            <Word>AS</Word>
+            <Word>ASC</Word>
+            <Word>BACKUP DATABASE</Word>
+            <Word>BETWEEN</Word>
+            <Word>CASE</Word>
+            <Word>CHECK</Word>
+            <Word>COLUMN</Word>
+            <Word>CONSTRAINT</Word>
+            <Word>CREATE</Word>
+            <Word>CREATE DATABASE</Word>
+            <Word>CREATE INDEX</Word>
+            <Word>CREATE OR REPLACE VIEW</Word>
+            <Word>CREATE TABLE</Word>
+            <Word>CREATE PROCEDURE</Word>
+            <Word>CREATE UNIQUE INDEX</Word>
+            <Word>CREATE VIEW</Word>
+            <Word>DATABASE</Word>
+            <Word>DEFAULT</Word>
+            <Word>DELETE</Word>
+            <Word>DESC</Word>
+            <Word>DISTINCT</Word>
+            <Word>DROP</Word>
+            <Word>DROP COLUMN</Word>
+            <Word>DROP CONSTRAINT</Word>
+            <Word>DROP DATABASE</Word>
+            <Word>DROP DEFAULT</Word>
+            <Word>DROP INDEX</Word>
+            <Word>DROP TABLE</Word>
+            <Word>DROP VIEW</Word>
+            <Word>EXEC</Word>
+            <Word>EXISTS</Word>
+            <Word>FOREIGN KEY</Word>
+            <Word>FROM</Word>
+            <Word>FULL OUTER JOIN</Word>
+            <Word>GROUP BY</Word>
+            <Word>HAVING</Word>
+            <Word>IN</Word>
+            <Word>INDEX</Word>
+            <Word>INNER JOIN</Word>
+            <Word>INSERT INTO</Word>
+            <Word>INSERT INTO SELECT</Word>
+            <Word>IS NULL</Word>
+            <Word>IS NOT NULL</Word>
+            <Word>JOIN</Word>
+            <Word>LEFT JOIN</Word>
+            <Word>LIKE</Word>
+            <Word>LIMIT</Word>
+            <Word>NOT</Word>
+            <Word>NOT NULL</Word>
+            <Word>OR</Word>
+            <Word>ORDER BY</Word>
+            <Word>OUTER JOIN</Word>
+            <Word>PRIMARY KEY</Word>
+            <Word>PROCEDURE</Word>
+            <Word>RIGHT JOIN</Word>
+            <Word>ROWNUM</Word>
+            <Word>SELECT</Word>
+            <Word>SELECT DISTINCT</Word>
+            <Word>SELECT INTO</Word>
+            <Word>SELECT TOP</Word>
+            <Word>SET</Word>
+            <Word>TABLE</Word>
+            <Word>TOP</Word>
+            <Word>TRUNCATE TABLE</Word>
+            <Word>UNION</Word>
+            <Word>UNION ALL</Word>
+            <Word>UNIQUE</Word>
+            <Word>UPDATE</Word>
+            <Word>VALUES</Word>
+            <Word>VIEW</Word>
+            <Word>WHERE</Word>
+        </Keywords>
+        <Span color="Comment">
+            <Begin>//</Begin>
+        </Span>
+        <Span color="Comment" multiline="true">
+            <Begin>/\*</Begin>
+            <End>\*/</End>
+        </Span>
+        <Span color="String">
+            <Begin>"</Begin>
+            <End>"</End>
+        </Span>
+        <Span color="String">
+            <Begin>'</Begin>
+            <End>'</End>
+        </Span>
+        <Span foreground="#FF000000" ruleSet="ParamList">
+            <Begin foreground="#FF0000FF" fontWeight="bold">&lt;</Begin>
+            <End foreground="#FF0000FF" fontWeight="bold">&gt;</End>
+        </Span>
+        <Rule foreground="#FF00008B" fontWeight="normal" fontStyle="normal">
+            \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
+        </Rule>
+    </RuleSet>
+    <RuleSet name="ParamList" ignoreCase="false">
+        <Import ruleSet="C#/"/>
+        <Rule foreground="#FF00008B" fontWeight="normal" fontStyle="normal">
+            \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
+        </Rule>
+    </RuleSet>
+    <RuleSet name="RuleDefinition" ignoreCase="false">
+        <Rule foreground="#FF00008B" fontWeight="normal" fontStyle="normal">
+            \b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?
+        </Rule>
+    </RuleSet>
+</SyntaxDefinition>
