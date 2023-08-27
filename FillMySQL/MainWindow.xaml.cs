@@ -1,35 +1,121 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.IO;
+using System.Reflection;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml;
+using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.AddIn;
+using ICSharpCode.AvalonEdit.Editing;
+using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using ICSharpCode.SharpDevelop.Editor;
 using Microsoft.Win32;
 
 namespace FillMySQL
 {
     public partial class MainWindow
     {
-        private TextRange _currentQueryRange;
-        private TextRange _currentParamRange;
-        private Brush _originalBackgroundBrush;
+
         private readonly MainWindowModel _mainWindowModel;
-        
+        private TextMarkerService _textMarkerService;
+        private (ITextMarker _sqlMarker, ITextMarker _paramMarker, ITextMarker _genericTextBefore, ITextMarker _genericTextAfter) _currentMarker;
+
         public MainWindow()
         {
             InitializeComponent();
-            OriginalQuery.PreviewKeyDown += OriginalQuery_PreviewKeyDown;
-            OriginalQuery.IsReadOnly = true;
-            OriginalQuery.IsReadOnlyCaretVisible = true;
-            OriginalQuery.SelectionChanged += OriginalQueryOnSelectionChanged;
+            
+            OriginalQuery.IsReadOnly = false;
             _mainWindowModel = new MainWindowModel();
             DataContext = _mainWindowModel;
             _mainWindowModel.PropertyChanged += PropertyHasChanged;
             
+            OriginalQuery.WordWrap = true;
+            OriginalQuery.ShowLineNumbers = true;
+            OriginalQuery.IsReadOnly = true;
+            OriginalQuery.TextArea.Caret.PositionChanged += CaretPositionChanged;
+            
+            OriginalQuery.PreviewKeyDown += OriginalQuery_PreviewKeyDown;
+            OriginalQuery.PreviewMouseWheel += QueryBoxOnPreviewMouseWheel;
+            ProcessedQuery.PreviewMouseWheel += QueryBoxOnPreviewMouseWheel;
+            
             PropertyHasChanged(_mainWindowModel, new PropertyChangedEventArgs(nameof(_mainWindowModel.CanBrowseToNextRecord)));
             PropertyHasChanged(_mainWindowModel, new PropertyChangedEventArgs(nameof(_mainWindowModel.CanBrowseToPreviousRecord)));
+            
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FillMySQL.Resources.sql.xshd"))
+            {
+                using (XmlTextReader reader = new XmlTextReader(stream))
+                {
+                    IHighlightingDefinition customHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                    OriginalQuery.SyntaxHighlighting = customHighlighting;
+                    ProcessedQuery.SyntaxHighlighting = customHighlighting;
+                    var colorizer = new SqlColorizingTransformer(_mainWindowModel.SqlProcessor, customHighlighting);
+                    OriginalQuery.TextArea.TextView.LineTransformers.RemoveAt(0);
+                    OriginalQuery.TextArea.TextView.LineTransformers.Add(colorizer);
+                    InitializeTextMarkerService();
+                    
+                }
+            }
         }
+
+        private void QueryBoxOnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            var textEditor = (TextEditor)sender;
+            if (!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl)) return;
+            textEditor.FontSize = e.Delta switch
+            {
+                > 0 => Math.Min(textEditor.FontSize + 1, 20),
+                < 0 => Math.Max(textEditor.FontSize - 1, 10),
+                _ => textEditor.FontSize
+            };
+            e.Handled = true;
+        }
+
+        void InitializeTextMarkerService()
+        {
+            _textMarkerService = new TextMarkerService(OriginalQuery.Document);
+            OriginalQuery.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
+            OriginalQuery.TextArea.TextView.LineTransformers.Add(_textMarkerService);
+            IServiceContainer services = (IServiceContainer)OriginalQuery.Document.ServiceProvider.GetService(typeof(IServiceContainer));
+            if (services != null)
+                services.AddService(typeof(ITextMarkerService), _textMarkerService);
+        }        
+
+        private void CaretPositionChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                ProcessedQuery.Text = "";
+                Caret caret = (Caret)sender;
+                var (_, qd) = _mainWindowModel.SqlProcessor.GetQueryAtCharacterPosition(caret.Offset);
+                RemoveOldMarkers();
+                ProcessQueryData(qd);
+            }
+            catch (Exception ex)
+            {
+                // Nothing
+            }
+        }
+
+        private void LoadFile_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                if (openFileDialog.ShowDialog() != true) return;
+                _mainWindowModel.SqlProcessor.LoadFile(openFileDialog.FileName);
+                OriginalQuery.Document.Text = _mainWindowModel.SqlProcessor.SqlString;
+                LoadStringAsQuery(_mainWindowModel.SqlProcessor.OriginalStringAsArray());
+            }
+            catch (ArgumentException ex)
+            {
+                DisplayError(ex);
+            }
+        }
+        
 
         private void PropertyHasChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -42,30 +128,9 @@ namespace FillMySQL
                 case nameof(_mainWindowModel.CanBrowseToPreviousRecord):
                     BrowsePreviousQuery.IsEnabled = _mainWindowModel.CanBrowseToPreviousRecord;
                     break;
-                
             }
         }
 
-        private void OriginalQueryOnSelectionChanged(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var currentPosition = CalculateCurrentPositionInText();
-                (_mainWindowModel.CurrentQueryIndex, QueryData? queryData) = _mainWindowModel.SqlProcessor.GetQueryAtCharacterPosition(currentPosition);
-                if (queryData != null)
-                {
-                    ProcessQueryData(queryData);
-                }
-                else
-                {
-                    ProcessedQuery.Text = "";
-                }
-            }
-            catch (Exception ex)
-            {
-                // Ignore the exception as it can be thrown when clicking on the empty textbox
-            }
-        }
 
         private void ProcessQueryData(QueryData? queryData)
         {
@@ -76,98 +141,69 @@ namespace FillMySQL
             var processedString = _mainWindowModel.SqlProcessor.ProcessQueryFromQueryData(content);
             _mainWindowModel.CurrentQueryIndex = content.index;
             ProcessedQuery.Text = processedString;
+            
         }
 
         private void ChangeQueryBackgroundInOriginalQueryTextBox(QueryData content)
         {
-            if (_currentQueryRange != null)
-            {
-                _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, _originalBackgroundBrush);
-                _currentParamRange.ApplyPropertyValue(TextElement.BackgroundProperty, _originalBackgroundBrush);
-            }
+            RemoveOldMarkers();
+            AddMarkerForQuery(content);
+            AddMarkerForParams(content);
+            AddMarkerForRestOfText(content);
+            ScrollViewToOffset(content.SqlStartPosition);
+        }
 
-            // Must calculate all of them in advance, cannot extract single method because color would add spaces!
-            // We could process each character in the text to check if it's a control character but would slow down
-            TextPointer sqlStartPointer = FindTextPointerByPosition(OriginalQuery.Document, content.SqlStartPosition + 1);
-            TextPointer sqlEndPointer = FindTextPointerByPosition(OriginalQuery.Document, content.SqlEndPosition + 1);
-            TextPointer paramStartPointer = FindTextPointerByPosition(OriginalQuery.Document, content.ParamsStartPosition + 1);
-            TextPointer paramEndPointer = FindTextPointerByPosition(OriginalQuery.Document, content.ParamsEndPosition + 1);
+        private void AddMarkerForRestOfText(QueryData content)
+        {
+            _currentMarker._genericTextBefore = _textMarkerService.Create(0,
+                content.SqlStartPosition);
+            _currentMarker._genericTextBefore.ForegroundColor = Colors.Gray;
+
+            _currentMarker._genericTextAfter = _textMarkerService.Create(Math.Max(content.SqlEndPosition, content.ParamsEndPosition),
+                OriginalQuery.Document.TextLength - Math.Max(content.SqlEndPosition, content.ParamsEndPosition));
+            _currentMarker._genericTextAfter.ForegroundColor = Colors.Gray;
+        }
+
+        private void AddMarkerForQuery(QueryData content)
+        {
+            _currentMarker._sqlMarker = _textMarkerService.Create(content.SqlStartPosition,
+                content.SqlEndPosition - content.SqlStartPosition);
+            _currentMarker._sqlMarker.BackgroundColor = Colors.Yellow;
+        }
+
+        private void AddMarkerForParams(QueryData content)
+        {
+            if (content.ParamsStartPosition <= 0 || content.ParamsEndPosition <= 0) return;
             
-            OriginalQuery.Focus();
-            ScrollToPosition(sqlStartPointer);
-            
-            _currentQueryRange = new TextRange(sqlStartPointer, sqlEndPointer);
-            _originalBackgroundBrush = _currentQueryRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
-            _currentQueryRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Yellow);
-
-            _currentParamRange = new TextRange(paramStartPointer, paramEndPointer);
-            _originalBackgroundBrush = _currentParamRange.GetPropertyValue(TextElement.BackgroundProperty) as Brush;
-            _currentParamRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Chartreuse);
-        }
-        
-        private void ScrollToPosition(in TextPointer desiredPosition)
-        {
-            var cursorRect = desiredPosition.GetCharacterRect(LogicalDirection.Forward);
-            var cursorTop = cursorRect.Top;
-
-            var viewportHeight = OriginalQuery.ViewportHeight;
-            var offset = cursorTop - viewportHeight / 2;
-            if (offset > 0)
-            {
-                OriginalQuery.ScrollToVerticalOffset(offset);
-            }
-        }        
-
-        private TextPointer FindTextPointerByPosition(FlowDocument document, int targetPosition)
-        {
-            int currentPosition = 0;
-            foreach (Block block in document.Blocks)
-            {
-                if (block is Paragraph paragraph)
-                {
-                    int paragraphLength = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text.Length;
-                    if (currentPosition + paragraphLength >= targetPosition)
-                    {
-                        int charIndex = targetPosition - currentPosition;
-                        return paragraph.ContentStart.GetPositionAtOffset(charIndex);
-                    }
-                    currentPosition += (paragraphLength  + 2);
-                }
-            }
-            return null;
+            _currentMarker._paramMarker = _textMarkerService.Create(content.ParamsStartPosition,
+                content.ParamsEndPosition - content.ParamsStartPosition);
+            _currentMarker._paramMarker.BackgroundColor = Colors.Chartreuse;
         }
 
-        private int CalculateCurrentPositionInText()
+        private void ScrollViewToOffset(in int offset)
         {
-            TextRange range = new TextRange(OriginalQuery.Document.ContentStart, OriginalQuery.CaretPosition);
-            return range.Text.Length + 1;
+            OriginalQuery.TextArea.Caret.Offset = offset;
+            OriginalQuery.TextArea.Caret.BringCaretToView();
         }
 
-        private void LoadFile_OnClick(object sender, RoutedEventArgs e)
+        private void RemoveOldMarkers()
         {
-            try
-            {
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                if (openFileDialog.ShowDialog() != true) return;
-                _mainWindowModel.SqlProcessor.LoadFile(openFileDialog.FileName);
-                LoadStringAsQuery(_mainWindowModel.SqlProcessor.OriginalStringAsArray());
-            }
-            catch (ArgumentException ex)
-            {
-                DisplayError(ex);
-            }
-
+            if (_currentMarker._sqlMarker != null) _textMarkerService.Remove(_currentMarker._sqlMarker);
+            if (_currentMarker._paramMarker != null) _textMarkerService.Remove(_currentMarker._paramMarker);
+            if (_currentMarker._genericTextBefore != null) _textMarkerService.Remove(_currentMarker._genericTextBefore);
+            if (_currentMarker._genericTextAfter != null) _textMarkerService.Remove(_currentMarker._genericTextAfter);
         }
 
         private void ProcessPasteOperation()
         {
             try
             {
-                if (IsQueryBoxEmpty() || (!IsQueryBoxEmpty() && ConfirmOverwriteCurrentText()))
+                if (ConfirmOverwriteCurrentText())
                 {
                     var text = Clipboard.GetText();
                     _mainWindowModel.SqlProcessor.Load(text);
-                    LoadStringAsQuery(new[] {text});
+                    OriginalQuery.Document.Text = text;
+                    // LoadStringAsQuery(new[] {text});
                 }
             }
             catch (ArgumentException ex)
@@ -180,25 +216,8 @@ namespace FillMySQL
         private void LoadStringAsQuery(string[] inputStrings)
         {
             RestoreStatusBar();
-            OriginalQuery.Document = CreateDocumentFromSqlString(inputStrings);
             var queryData = _mainWindowModel.SqlProcessor.GetQueryAtPosition(1);
             ProcessQueryData(queryData);
-        }
-
-
-        private FlowDocument CreateDocumentFromSqlString(IEnumerable<string> inputLines)
-        {
-            var document = new FlowDocument();
-
-            foreach (var currentLine in inputLines)
-            {
-                var par = new Paragraph(new Run(currentLine))
-                {
-                    Margin = new Thickness(0)
-                };
-                document.Blocks.Add(par);
-            }
-            return document;
         }
 
         private void OriginalQuery_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -217,14 +236,6 @@ namespace FillMySQL
             }
         }
 
-
-
-        private bool IsQueryBoxEmpty()
-        {
-            return string.IsNullOrWhiteSpace(
-                new TextRange(OriginalQuery.Document.ContentStart, OriginalQuery.Document.ContentEnd).Text);
-        }
-
         private void GoToNextQuery_OnClick(object sender, RoutedEventArgs e)
         {
             int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex + 1;
@@ -234,6 +245,7 @@ namespace FillMySQL
         private void BrowsePreviousQuery_OnClick(object sender, RoutedEventArgs e)
         {
             int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex - 1;
+
             NavigateToQueryWithIndex(requestedQueryIndex);
         }
 
@@ -241,14 +253,17 @@ namespace FillMySQL
         {
             try
             {
-                QueryData? queryData =
+                Console.WriteLine("Navigating to query " + requestedQueryIndex);
+                QueryData queryData =
                     _mainWindowModel.SqlProcessor.GetQueryAtPosition(requestedQueryIndex);
-                OriginalQuery.CaretPosition =
-                    FindTextPointerByPosition(OriginalQuery.Document, queryData.Value.SqlStartPosition);
+                // OriginalQuery.TextArea.Caret.Offset
+                //     FindTextPointerByPosition(OriginalQuery.Document, queryData.Value.SqlStartPosition);
+
                 ProcessQueryData(queryData);
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Cannot navigate to query " + requestedQueryIndex + " " + _mainWindowModel.SqlProcessor.NumberOfQueries);
                 ShowErrorInStatusBar(ex.Message);
             }
         }

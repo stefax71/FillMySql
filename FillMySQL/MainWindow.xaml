@@ -85,30 +85,32 @@
             IsEnabled="{Binding CanBrowseToNextQuery}"
         />        
         
-        <RichTextBox  
+        <avalonEdit:TextEditor
             Grid.Column="0"
             Grid.ColumnSpan="8"
             Grid.Row="1"
             Grid.RowSpan="3"
-            Name="OriginalQuery" 
-            VerticalAlignment="Stretch" 
+            xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+            Name="OriginalQuery"
+            SyntaxHighlighting="C#"
+            FontFamily="Consolas"
             Margin="10,10,10,10"
-            Background="#99d3d3d3"
-            Foreground="Black"
-        />
+            FontSize="12pt"/>
         
-        <TextBox  
+        
+        <avalonEdit:TextEditor
             Grid.Column="0"
             Grid.ColumnSpan="8"
             Grid.Row="4"
             Grid.RowSpan="3"
-            TextWrapping="WrapWithOverflow"
-            Name="ProcessedQuery" 
-            VerticalAlignment="Stretch" 
+            xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+            Name="ProcessedQuery"
+            SyntaxHighlighting="SQL"
+            WordWrap="True"
+            FontFamily="Consolas"
             Margin="10,10,10,10"
-            Background="#99d3d3d3"
-            Foreground="Black"
-        />        
+            FontSize="10pt"/>
+        
         
         <StatusBar
             Name="StatusBar"
