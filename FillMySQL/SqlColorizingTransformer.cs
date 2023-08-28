@@ -9,25 +9,25 @@ public class SqlColorizingTransformer : HighlightingColorizer
 {
     private readonly SqlProcessor _sqlProcessor;
     private int _currentLine;
-    private Dictionary<int, int> lineLengths;
-    private HighlightingColor plainTextColor;
+    private readonly Dictionary<int, int> _lineLengths;
+
     public SqlColorizingTransformer(SqlProcessor sqlProcessor, IHighlightingDefinition highlightingDefinition): base(highlightingDefinition)
     {
-        plainTextColor = highlightingDefinition.GetNamedColor("PlainText");
+        highlightingDefinition.GetNamedColor("PlainText");
         this._sqlProcessor = sqlProcessor;
-        lineLengths = new Dictionary<int, int>();
+        _lineLengths = new Dictionary<int, int>();
     }
 
     protected override void ColorizeLine(DocumentLine line)
     {
         if (line.LineNumber == 0)
         {
-            lineLengths.Clear();
+            _lineLengths.Clear();
         }
 
-        if (line.Length > 0 && !lineLengths.ContainsKey(line.LineNumber))
+        if (line.Length > 0 && !_lineLengths.ContainsKey(line.LineNumber))
         {
-            lineLengths.Add(line.LineNumber, line.TotalLength);    
+            _lineLengths.Add(line.LineNumber, line.TotalLength);    
         }
         _currentLine = line.LineNumber;
         base.ColorizeLine(line);
@@ -36,20 +36,20 @@ public class SqlColorizingTransformer : HighlightingColorizer
     protected override void ApplyColorToElement(VisualLineElement element, HighlightingColor color)
     {
         var currentOffset = element.RelativeTextOffset;
-        int totalOffset = 0;
-        for (int i = 1; i < _currentLine; i++)
+        var totalOffset = 0;
+        for (var i = 1; i < _currentLine; i++)
         {
-            if (lineLengths.ContainsKey(i))
+            if (_lineLengths.TryGetValue(i, out var length))
             {
-                totalOffset += lineLengths[i];    
+                totalOffset += length;
             }
-            
         }
+
         totalOffset += currentOffset;
-        (int queryIndex, QueryData? qd) = _sqlProcessor.GetQueryAtCharacterPosition(totalOffset);
+        var (queryIndex, _) = _sqlProcessor.GetQueryAtCharacterPosition(totalOffset);
         if (queryIndex > 0)
         {
-            base.ApplyColorToElement(element, color);    
+            base.ApplyColorToElement(element, color);
         }
     }
 }
