@@ -163,15 +163,15 @@ namespace FillMySQLTests
         {
             SqlProcessor sqlProcessor = new SqlProcessor();
             sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
-            Assert.True(sqlProcessor.Queries.Count == 3);            
+            Assert.True(sqlProcessor.Queries.Count == 4);            
         }
 
         [Test]
         public void WhenCallingReset_EmptiesEverything()
         {
-            SqlProcessor sqlProcessor = new SqlProcessor();
+            var sqlProcessor = new SqlProcessor();
             sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
-            Assert.True(sqlProcessor.Queries.Count == 3);
+            Assert.True(sqlProcessor.Queries.Count == 4);
             Assert.True(sqlProcessor.SqlString.Length > 0);
             sqlProcessor.Reset();
             Assert.True(sqlProcessor.Queries.Count == 0);

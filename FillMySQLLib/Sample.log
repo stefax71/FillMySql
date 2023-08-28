@@ -1,5 +1,4 @@
 ﻿// This is a commented line
-This is the first line not containing any SQL
 -- This is a commented line
 (stupid text before) Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIELD2=0 And And T3.SOMEOTHERFIELD='MyValue' And  FILTER1=? And FILTER 2 IN (?, ?) And  FILTER3 IN(?, ?) And ( FILTER4 IN (Select SOMETHING From TABLE Where TABLE.FIELD=?)) And  (FINALCONDITION=?) and rownum <= 20000 ['9044954',1,110,2,1,1,7] (silly any text after)
 This is the third line, not containing any SQL
@@ -7,3 +6,5 @@ Select  distinct  FIELD1, FIELD2, FIELD 2 From Table1 T, Table2 T2 Where T2.FIEL
 This is the fourth line, not containing any SQL
 SELECT * FROM TABLE 
 This is the fifth line
+This is the first line not containing any SQL
+SELECT * FROM TABLE []
