@@ -200,7 +200,7 @@ namespace FillMySQL
         private (string[] listOfParams, string sqlString) ListOfParams(QueryData qd)
         {
             var paramsString = qd.QueryParameters.Replace('[', ' ').Replace(']', ' ').Trim();
-            var listOfParams = paramsString.Split(',');
+            var listOfParams = paramsString.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
             var countPlaceholders = qd.Query.Count(s => s == '?');
             if (countPlaceholders != listOfParams.Length)
             {
