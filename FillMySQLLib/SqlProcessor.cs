@@ -8,35 +8,14 @@ using System.Text.RegularExpressions;
 
 namespace FillMySQL
 {
-
-    public struct QueryData
-    {
-        public int index;
-        public int SqlStartPosition;
-        public int SqlEndPosition;
-        public int ParamsStartPosition;
-        public int ParamsEndPosition;
-        public string Query;
-        public string QueryParameters;
-    }
-    
     public class SqlProcessor
     {
-        private string _sqlString;
         private List<QueryData> _queriesData;
-        private string _eol;
         public ObservableCollection<string> Queries => GetAllQueries();
 
-        public string SqlString
-        {
-            get => _sqlString;
-        }
+        public string SqlString { get; private set; }
 
-        public string Eol
-        {
-            get => _eol;
-            set => _eol = value;
-        }
+        public string Eol { get; set; }
 
         public int NumberOfQueries
         {
@@ -48,7 +27,7 @@ namespace FillMySQL
             CheckIfStringIsEmpty(sqlString);
             CheckIfStringContainsSql(sqlString);
 
-            _sqlString = sqlString;
+            SqlString = sqlString;
             _queriesData = ProcessSqlContent();
         }
 
@@ -112,37 +91,37 @@ namespace FillMySQL
             if (HasWindowsEOL())
             {
                 Eol = "\r\n";
-                return _sqlString.Split(new[] { "\r\n" }, System.StringSplitOptions.None);    
+                return SqlString.Split(new[] { "\r\n" }, System.StringSplitOptions.None);    
             }
 
             if (HasMacEOL())
             {
                 Eol = "\r";
-                return _sqlString.Split(new[] { "\r" }, System.StringSplitOptions.None);
+                return SqlString.Split(new[] { "\r" }, System.StringSplitOptions.None);
             }
 
             if (HasLinuxEOL())
             {
                 Eol = "\n";
-                return _sqlString.Split(new[] { "\n" }, System.StringSplitOptions.None);
+                return SqlString.Split(new[] { "\n" }, System.StringSplitOptions.None);
             }
 
-            return new[] { _sqlString };
+            return new[] { SqlString };
         }
 
         private bool HasWindowsEOL()
         {
-            return _sqlString.IndexOf("\r\n", StringComparison.Ordinal) >= 0;
+            return SqlString.IndexOf("\r\n", StringComparison.Ordinal) >= 0;
         }
 
         private bool HasMacEOL()
         {
-            return _sqlString.IndexOf("\r", StringComparison.Ordinal) >= 0 && _sqlString.IndexOf("\n", StringComparison.Ordinal) < 0;
+            return SqlString.IndexOf("\r", StringComparison.Ordinal) >= 0 && SqlString.IndexOf("\n", StringComparison.Ordinal) < 0;
         }
         
         private bool HasLinuxEOL()
         {
-            return _sqlString.IndexOf("\n", StringComparison.Ordinal) >= 0 && _sqlString.IndexOf("\r", StringComparison.Ordinal) < 0;
+            return SqlString.IndexOf("\n", StringComparison.Ordinal) >= 0 && SqlString.IndexOf("\r", StringComparison.Ordinal) < 0;
         }        
 
         private static (int firstKeyworkPosition, int openingParamDelimiterPosition, int closingParamDelimiterPosition, string
@@ -214,7 +193,7 @@ namespace FillMySQL
         public void LoadFile(string fillmysqllibSamplelog)
         {
             var fileContent = File.ReadAllText(@fillmysqllibSamplelog, Encoding.UTF8);
-            _sqlString = fileContent;
+            SqlString = fileContent;
             Load(fileContent);
         }
 
@@ -230,7 +209,7 @@ namespace FillMySQL
 
         public void Reset()
         {
-            _sqlString = "";
+            SqlString = "";
             _queriesData.Clear();
         }
 
@@ -251,17 +230,18 @@ namespace FillMySQL
         private QueryData PopulateQueryData(in int currentAbsoluteIndex, in int queryIndex, in string currentString)
         {
             var (firstKeywordPosition, openingParamDelimiterPosition, closingParamDelimiterPosition, sqlPart, paramsPart) = ParseQuery(currentString);
-            QueryData queryData;
-            queryData.index = queryIndex + 1;
-            queryData.SqlStartPosition = firstKeywordPosition + currentAbsoluteIndex;
-            queryData.SqlEndPosition = openingParamDelimiterPosition + currentAbsoluteIndex - 1;
-            queryData.ParamsStartPosition =
-                closingParamDelimiterPosition > 0 ? openingParamDelimiterPosition + currentAbsoluteIndex : -1;
-            queryData.ParamsEndPosition = closingParamDelimiterPosition > 0
-                ? closingParamDelimiterPosition + currentAbsoluteIndex + 1
-                : -1;
-            queryData.Query = sqlPart;
-            queryData.QueryParameters = paramsPart;
+            QueryData queryData = new QueryData
+            {
+                Index = queryIndex + 1,
+                SqlStartPosition = firstKeywordPosition + currentAbsoluteIndex,
+                SqlEndPosition = openingParamDelimiterPosition + currentAbsoluteIndex - 1,
+                ParamsStartPosition = closingParamDelimiterPosition > 0 ? openingParamDelimiterPosition + currentAbsoluteIndex : -1,
+                ParamsEndPosition = closingParamDelimiterPosition > 0
+                    ? closingParamDelimiterPosition + currentAbsoluteIndex + 1
+                    : -1,
+                Query = sqlPart,
+                QueryParameters = paramsPart
+            };
             return queryData;
         }        
     }

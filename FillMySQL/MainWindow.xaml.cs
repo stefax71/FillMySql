@@ -138,7 +138,7 @@ namespace FillMySQL
             QueryData content = queryData.Value;
             ChangeQueryBackgroundInOriginalQueryTextBox(content);
             var processedString = _mainWindowModel.SqlProcessor.ProcessQueryFromQueryData(content);
-            _mainWindowModel.CurrentQueryIndex = content.index;
+            _mainWindowModel.CurrentQueryIndex = content.Index;
             ProcessedQuery.Text = processedString;
             
         }
