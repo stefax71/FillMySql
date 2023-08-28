@@ -132,17 +132,17 @@ namespace FillMySQL
 
         private bool HasWindowsEOL()
         {
-            return _sqlString.IndexOf("\r\n", StringComparison.Ordinal) > 0;
+            return _sqlString.IndexOf("\r\n", StringComparison.Ordinal) >= 0;
         }
 
         private bool HasMacEOL()
         {
-            return _sqlString.IndexOf("\r", StringComparison.Ordinal) > 0 && _sqlString.IndexOf("\n", StringComparison.Ordinal) < 0;
+            return _sqlString.IndexOf("\r", StringComparison.Ordinal) >= 0 && _sqlString.IndexOf("\n", StringComparison.Ordinal) < 0;
         }
         
         private bool HasLinuxEOL()
         {
-            return _sqlString.IndexOf("\n", StringComparison.Ordinal) > 0 && _sqlString.IndexOf("\r", StringComparison.Ordinal) < 0;
+            return _sqlString.IndexOf("\n", StringComparison.Ordinal) >= 0 && _sqlString.IndexOf("\r", StringComparison.Ordinal) < 0;
         }        
 
         private static (int firstKeyworkPosition, int openingParamDelimiterPosition, int closingParamDelimiterPosition, string
