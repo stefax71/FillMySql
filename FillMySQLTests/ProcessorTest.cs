@@ -163,15 +163,15 @@ namespace FillMySQLTests
         {
             SqlProcessor sqlProcessor = new SqlProcessor();
             sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
-            Assert.True(sqlProcessor.Queries.Count == 3);            
+            Assert.True(sqlProcessor.Queries.Count == 4);            
         }
 
         [Test]
         public void WhenCallingReset_EmptiesEverything()
         {
-            SqlProcessor sqlProcessor = new SqlProcessor();
+            var sqlProcessor = new SqlProcessor();
             sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
-            Assert.True(sqlProcessor.Queries.Count == 3);
+            Assert.True(sqlProcessor.Queries.Count == 4);
             Assert.True(sqlProcessor.SqlString.Length > 0);
             sqlProcessor.Reset();
             Assert.True(sqlProcessor.Queries.Count == 0);
@@ -203,5 +203,15 @@ namespace FillMySQLTests
             Assert.AreEqual(2, position);
             Assert.AreEqual(expected, data.Value.Query);
         }
+        
+        [Test]
+        public void WhenRequestingQueryWithNoParams_ReturnsQueryUpToLastCharOfQuery()
+        {
+            var expected = "SELECT * FROM TABLE1";
+            SqlProcessor sqlProcessor = new SqlProcessor();
+            sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
+            QueryData qd = sqlProcessor.GetQueryAtPosition(4);
+            Assert.AreEqual(expected, qd.Query);
+        }        
    }
 }

@@ -28,7 +28,6 @@ namespace FillMySQL
         {
             InitializeComponent();
             
-            OriginalQuery.IsReadOnly = false;
             _mainWindowModel = new MainWindowModel();
             DataContext = _mainWindowModel;
             _mainWindowModel.PropertyChanged += PropertyHasChanged;
@@ -74,13 +73,12 @@ namespace FillMySQL
             e.Handled = true;
         }
 
-        void InitializeTextMarkerService()
+        private void InitializeTextMarkerService()
         {
             _textMarkerService = new TextMarkerService(OriginalQuery.Document);
             OriginalQuery.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
             OriginalQuery.TextArea.TextView.LineTransformers.Add(_textMarkerService);
-            IServiceContainer services = (IServiceContainer)OriginalQuery.Document.ServiceProvider.GetService(typeof(IServiceContainer));
-            if (services != null)
+            if (OriginalQuery.Document.ServiceProvider.GetService(typeof(IServiceContainer)) is IServiceContainer services)
                 services.AddService(typeof(ITextMarkerService), _textMarkerService);
         }        
 
@@ -108,7 +106,7 @@ namespace FillMySQL
                 if (openFileDialog.ShowDialog() != true) return;
                 _mainWindowModel.SqlProcessor.LoadFile(openFileDialog.FileName);
                 OriginalQuery.Document.Text = _mainWindowModel.SqlProcessor.SqlString;
-                LoadStringAsQuery(_mainWindowModel.SqlProcessor.OriginalStringAsArray());
+                NavigateToQueryWithIndex(1);
             }
             catch (ArgumentException ex)
             {
@@ -139,7 +137,7 @@ namespace FillMySQL
             QueryData content = queryData.Value;
             ChangeQueryBackgroundInOriginalQueryTextBox(content);
             var processedString = _mainWindowModel.SqlProcessor.ProcessQueryFromQueryData(content);
-            _mainWindowModel.CurrentQueryIndex = content.index;
+            _mainWindowModel.CurrentQueryIndex = content.Index;
             ProcessedQuery.Text = processedString;
             
         }
@@ -167,7 +165,7 @@ namespace FillMySQL
         private void AddMarkerForQuery(QueryData content)
         {
             _currentMarker._sqlMarker = _textMarkerService.Create(content.SqlStartPosition,
-                content.SqlEndPosition - content.SqlStartPosition);
+                content.Query.Length);
             _currentMarker._sqlMarker.BackgroundColor = Colors.Yellow;
         }
 
@@ -176,7 +174,7 @@ namespace FillMySQL
             if (content.ParamsStartPosition <= 0 || content.ParamsEndPosition <= 0) return;
             
             _currentMarker._paramMarker = _textMarkerService.Create(content.ParamsStartPosition,
-                content.ParamsEndPosition - content.ParamsStartPosition);
+                content.QueryParameters.Length);
             _currentMarker._paramMarker.BackgroundColor = Colors.Chartreuse;
         }
 
@@ -198,13 +196,10 @@ namespace FillMySQL
         {
             try
             {
-                if (ConfirmOverwriteCurrentText())
-                {
-                    var text = Clipboard.GetText();
-                    _mainWindowModel.SqlProcessor.Load(text);
-                    OriginalQuery.Document.Text = text;
-                    // LoadStringAsQuery(new[] {text});
-                }
+                if (!ConfirmOverwriteCurrentText()) return;
+                var text = Clipboard.GetText();
+                _mainWindowModel.SqlProcessor.Load(text);
+                OriginalQuery.Document.Text = text;
             }
             catch (ArgumentException ex)
             {
@@ -212,14 +207,7 @@ namespace FillMySQL
             }
 
         }
-
-        private void LoadStringAsQuery(string[] inputStrings)
-        {
-            RestoreStatusBar();
-            var queryData = _mainWindowModel.SqlProcessor.GetQueryAtPosition(1);
-            ProcessQueryData(queryData);
-        }
-
+        
         private void OriginalQuery_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if ((Keyboard.Modifiers & ModifierKeys.Control) != ModifierKeys.Control || e.Key != Key.V) return;
@@ -238,13 +226,13 @@ namespace FillMySQL
 
         private void GoToNextQuery_OnClick(object sender, RoutedEventArgs e)
         {
-            int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex + 1;
+            var requestedQueryIndex = _mainWindowModel.CurrentQueryIndex + 1;
             NavigateToQueryWithIndex(requestedQueryIndex);
         }
 
         private void BrowsePreviousQuery_OnClick(object sender, RoutedEventArgs e)
         {
-            int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex - 1;
+            var requestedQueryIndex = _mainWindowModel.CurrentQueryIndex - 1;
 
             NavigateToQueryWithIndex(requestedQueryIndex);
         }
@@ -253,17 +241,14 @@ namespace FillMySQL
         {
             try
             {
-                Console.WriteLine("Navigating to query " + requestedQueryIndex);
+                RestoreStatusBar();
                 QueryData queryData =
                     _mainWindowModel.SqlProcessor.GetQueryAtPosition(requestedQueryIndex);
-                // OriginalQuery.TextArea.Caret.Offset
-                //     FindTextPointerByPosition(OriginalQuery.Document, queryData.Value.SqlStartPosition);
 
                 ProcessQueryData(queryData);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Cannot navigate to query " + requestedQueryIndex + " " + _mainWindowModel.SqlProcessor.NumberOfQueries);
                 ShowErrorInStatusBar(ex.Message);
             }
         }
