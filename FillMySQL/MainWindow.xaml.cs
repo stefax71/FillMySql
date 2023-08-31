@@ -28,7 +28,6 @@ namespace FillMySQL
         {
             InitializeComponent();
             
-            OriginalQuery.IsReadOnly = false;
             _mainWindowModel = new MainWindowModel();
             DataContext = _mainWindowModel;
             _mainWindowModel.PropertyChanged += PropertyHasChanged;
@@ -74,7 +73,7 @@ namespace FillMySQL
             e.Handled = true;
         }
 
-        void InitializeTextMarkerService()
+        private void InitializeTextMarkerService()
         {
             _textMarkerService = new TextMarkerService(OriginalQuery.Document);
             OriginalQuery.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
