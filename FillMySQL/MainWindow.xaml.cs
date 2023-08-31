@@ -166,7 +166,7 @@ namespace FillMySQL
         private void AddMarkerForQuery(QueryData content)
         {
             _currentMarker._sqlMarker = _textMarkerService.Create(content.SqlStartPosition,
-                content.SqlEndPosition - content.SqlStartPosition);
+                content.Query.Length);
             _currentMarker._sqlMarker.BackgroundColor = Colors.Yellow;
         }
 
@@ -175,7 +175,7 @@ namespace FillMySQL
             if (content.ParamsStartPosition <= 0 || content.ParamsEndPosition <= 0) return;
             
             _currentMarker._paramMarker = _textMarkerService.Create(content.ParamsStartPosition,
-                content.ParamsEndPosition - content.ParamsStartPosition);
+                content.QueryParameters.Length);
             _currentMarker._paramMarker.BackgroundColor = Colors.Chartreuse;
         }
 
@@ -197,12 +197,10 @@ namespace FillMySQL
         {
             try
             {
-                if (ConfirmOverwriteCurrentText())
-                {
-                    var text = Clipboard.GetText();
-                    _mainWindowModel.SqlProcessor.Load(text);
-                    OriginalQuery.Document.Text = text;
-                }
+                if (!ConfirmOverwriteCurrentText()) return;
+                var text = Clipboard.GetText();
+                _mainWindowModel.SqlProcessor.Load(text);
+                OriginalQuery.Document.Text = text;
             }
             catch (ArgumentException ex)
             {
@@ -229,13 +227,13 @@ namespace FillMySQL
 
         private void GoToNextQuery_OnClick(object sender, RoutedEventArgs e)
         {
-            int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex + 1;
+            var requestedQueryIndex = _mainWindowModel.CurrentQueryIndex + 1;
             NavigateToQueryWithIndex(requestedQueryIndex);
         }
 
         private void BrowsePreviousQuery_OnClick(object sender, RoutedEventArgs e)
         {
-            int requestedQueryIndex = _mainWindowModel.CurrentQueryIndex - 1;
+            var requestedQueryIndex = _mainWindowModel.CurrentQueryIndex - 1;
 
             NavigateToQueryWithIndex(requestedQueryIndex);
         }

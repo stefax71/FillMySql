@@ -203,5 +203,15 @@ namespace FillMySQLTests
             Assert.AreEqual(2, position);
             Assert.AreEqual(expected, data.Value.Query);
         }
+        
+        [Test]
+        public void WhenRequestingQueryWithNoParams_ReturnsQueryUpToLastCharOfQuery()
+        {
+            var expected = "SELECT * FROM TABLE1";
+            SqlProcessor sqlProcessor = new SqlProcessor();
+            sqlProcessor.LoadFile("../../../FillMySQLLib/Sample.log");
+            QueryData qd = sqlProcessor.GetQueryAtPosition(4);
+            Assert.AreEqual(expected, qd.Query);
+        }        
    }
 }
